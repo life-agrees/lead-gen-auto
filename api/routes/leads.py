@@ -1,0 +1,108 @@
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
+from typing import List, Dict, Any
+from api.db.supabase_client import DatabaseClient
+from api.db.models import LeadBase, LeadCreate
+from discovery.twitter_scraper import TwitterScraper
+from discovery.github_scraper import GitHubScraper
+from discovery.onchain_scanner import OnchainScanner
+from discovery.discord_monitor import DiscordMonitor
+from enrichment.enricher_pipeline import EnricherPipeline
+from scoring.rule_scorer import RuleScorer
+from scoring.ml_scorer import MLScorer
+from utils.logger import get_logger
+
+router = APIRouter(prefix="/leads", tags=["leads"])
+logger = get_logger("LeadsRouter")
+db = DatabaseClient()
+
+# Pipelines instantiations
+twitter_scraper = TwitterScraper()
+github_scraper = GitHubScraper()
+onchain_scanner = OnchainScanner()
+discord_monitor = DiscordMonitor()
+enricher_pipeline = EnricherPipeline()
+rule_scorer = RuleScorer()
+ml_scorer = MLScorer()
+
+def run_discovery_and_enrichment_task(limit: int = 5):
+    """Background pipeline executor combining scrapers, enrichers, and scorers."""
+    logger.info("Executing background lead generation pipeline run...")
+    try:
+        raw_leads = []
+        
+        # 1. Scraping runs
+        raw_leads.extend(twitter_scraper.search_leads(limit=limit))
+        raw_leads.extend(github_scraper.search_active_contributors(limit=limit))
+        raw_leads.extend(onchain_scanner.scan_active_wallets(limit=limit))
+        raw_leads.extend(discord_monitor.listen_keywords(limit=limit))
+
+        # 2. Enrichment batch
+        enriched_leads = enricher_pipeline.enrich_batch(raw_leads)
+
+        # 3. Scoring runs and saving
+        for lead in enriched_leads:
+            score, breakdown = rule_scorer.calculate_score(lead)
+            
+            # Predict ML fit probability if available
+            ml_prob, _ = ml_scorer.predict_fit_probability(lead)
+            # Combine rule score & ML probability for a rich composite score
+            composite_score = round((score + ml_prob) / 2.0, 1)
+            
+            lead["score"] = composite_score
+            lead["score_breakdown"] = breakdown
+            
+            # Save to Database
+            db.create_lead(lead)
+            
+        logger.info(f"Background pipeline run finished. Processed and saved {len(enriched_leads)} leads.")
+    except Exception as e:
+        logger.error(f"Background pipeline run crashed: {str(e)}")
+
+@router.get("/", response_model=List[LeadBase])
+def read_leads(min_score: float = Query(0.0, description="Minimum lead fit score to filter by")):
+    """Retrieves all leads from the database, sorted by score."""
+    leads = db.get_leads(min_score)
+    return leads
+
+@router.get("/{lead_id}", response_model=LeadBase)
+def read_lead(lead_id: str):
+    """Retrieves detailed profile information for a single lead."""
+    lead = db.get_lead_by_id(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+    return lead
+
+@router.post("/", response_model=LeadBase)
+def create_lead(lead: LeadCreate):
+    """Enables manual lead insertion directly into the automation pipeline."""
+    # Convert Create schema to Dict
+    lead_dict = lead.model_dump()
+    # Compute base scoring immediately
+    score, breakdown = rule_scorer.calculate_score(lead_dict)
+    lead_dict["score"] = score
+    lead_dict["score_breakdown"] = breakdown
+    
+    saved_lead = db.create_lead(lead_dict)
+    return saved_lead
+
+@router.post("/trigger-pipeline")
+def trigger_pipeline(background_tasks: BackgroundTasks, limit: int = 5):
+    """Asynchronously launches the complete scraping, enrichment, and scoring pipelines."""
+    background_tasks.add_task(run_discovery_and_enrichment_task, limit)
+    return {"status": "running", "message": "Lead generation pipeline triggered in background."}
+
+@router.post("/{lead_id}/rescore", response_model=LeadBase)
+def rescore_lead(lead_id: str):
+    """Triggers recalculation of the heuristic and ML score for an existing lead."""
+    lead = db.get_lead_by_id(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+        
+    score, breakdown = rule_scorer.calculate_score(lead)
+    ml_prob, _ = ml_scorer.predict_fit_probability(lead)
+    composite_score = round((score + ml_prob) / 2.0, 1)
+    
+    db.update_lead_score(lead_id, composite_score, breakdown)
+    
+    updated_lead = db.get_lead_by_id(lead_id)
+    return updated_lead

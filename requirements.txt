@@ -1,0 +1,27 @@
+# API & Server
+fastapi
+uvicorn
+python-dotenv
+pydantic
+httpx
+
+# LLM Providers
+anthropic
+openai
+google-generativeai
+mistralai
+groq
+
+# Data & ML
+supabase
+pandas
+numpy
+scikit-learn
+
+# Web3
+web3
+requests
+
+# Scraping & Discovery
+tweepy
+APScheduler

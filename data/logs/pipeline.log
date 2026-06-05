@@ -1,0 +1,54 @@
+2026-05-28 18:05:10,269 - DatabaseClient - INFO - Database Client: SUPABASE credentials missing. Using SQLite database fallback.
+2026-05-28 18:05:10,331 - DatabaseClient - INFO - Local SQLite database tables verified/created.
+2026-05-28 18:05:10,332 - TwitterScraper - INFO - TwitterScraper initialized with Bearer Token.
+2026-05-28 18:05:10,333 - GitHubScraper - WARNING - GITHUB_TOKEN not found in .env. Running in Mock Data Generation Mode.
+2026-05-28 18:05:10,333 - OnchainScanner - WARNING - DUNE_API_KEY not found in .env. Running in Mock Data Generation Mode.
+2026-05-28 18:05:10,334 - DiscordMonitor - WARNING - DISCORD_BOT_TOKEN not found in .env. Running in Mock Data Generation Mode.
+2026-05-28 18:05:10,334 - EnricherPipeline - INFO - EnricherPipeline components loaded successfully.
+2026-05-28 18:05:10,335 - MLScorer - WARNING - ML Model pkl file not found. System will fall back to RuleScorer heuristics.
+2026-05-28 18:05:10,528 - DatabaseClient - INFO - Database Client: SUPABASE credentials missing. Using SQLite database fallback.
+2026-05-28 18:05:10,530 - DatabaseClient - INFO - Local SQLite database tables verified/created.
+2026-05-28 18:05:10,531 - LLMMessageGenerator - INFO - LLM Message Generator active. Primary Provider: MOCK
+2026-05-28 18:05:10,531 - OutreachTracker - INFO - OutreachTracker initialized.
+2026-05-28 18:05:10,556 - DatabaseClient - INFO - Database Client: SUPABASE credentials missing. Using SQLite database fallback.
+2026-05-28 18:05:10,562 - DatabaseClient - INFO - Local SQLite database tables verified/created.
+2026-05-28 18:05:10,598 - APIServer - INFO - Initializing API services...
+2026-05-28 18:05:10,598 - DatabaseClient - INFO - Database Client: SUPABASE credentials missing. Using SQLite database fallback.
+2026-05-28 18:05:10,601 - DatabaseClient - INFO - Local SQLite database tables verified/created.
+2026-05-28 18:05:10,604 - APIServer - INFO - Database is empty. Seeding initial mockup leads for interactive experience...
+2026-05-28 18:05:10,654 - APIServer - INFO - Seed leads populated successfully.
+2026-05-29 10:41:16,090 - LeadsRouter - INFO - Executing background lead generation pipeline run...
+2026-05-29 10:41:16,134 - TwitterScraper - INFO - Searching X for query: 'defi OR blockchain OR web3' (limit: 4)
+2026-05-29 10:41:17,760 - TwitterScraper - ERROR - Twitter API error: 403 - {"client_id":"31003852","detail":"When authenticating requests to the Twitter API v2 endpoints, you must use keys and tokens from a Twitter developer App that is attached to a Project. You can create a project via the developer portal.","registration_url":"https://developer.twitter.com/en/docs/projects/overview","title":"Client Forbidden","required_enrollment":"Appropriate Level of API Access","reason":"client-not-enrolled","type":"https://api.twitter.com/2/problems/client-forbidden"}. Falling back to mock leads.
+2026-05-29 10:41:17,767 - GitHubScraper - INFO - Searching GitHub repositories with topic: 'solidity' (limit: 4)
+2026-05-29 10:41:17,769 - OnchainScanner - INFO - Scanning for active wallets with transactions >= 50 (limit: 4)
+2026-05-29 10:41:17,771 - DiscordMonitor - INFO - Monitoring Discord channel mock_channel (limit: 4)
+2026-05-29 10:41:17,771 - EnricherPipeline - INFO - Starting enrichment batch for 16 leads.
+2026-05-29 10:41:17,772 - TwitterEnricher - INFO - Enriching Twitter lead: @0x_alchemist
+2026-05-29 10:41:18,159 - TwitterEnricher - ERROR - Twitter API returned error 403. Using mock enrichment.
+2026-05-29 10:41:18,165 - TwitterEnricher - INFO - Enriching Twitter lead: @elena_agents
+2026-05-29 10:41:18,527 - TwitterEnricher - ERROR - Twitter API returned error 403. Using mock enrichment.
+2026-05-29 10:41:18,534 - TwitterEnricher - INFO - Enriching Twitter lead: @rust_block
+2026-05-29 10:41:18,914 - TwitterEnricher - ERROR - Twitter API returned error 403. Using mock enrichment.
+2026-05-29 10:41:18,919 - TwitterEnricher - INFO - Enriching Twitter lead: @solidity_guru
+2026-05-29 10:41:19,299 - TwitterEnricher - ERROR - Twitter API returned error 403. Using mock enrichment.
+2026-05-29 10:41:19,303 - GitHubEnricher - INFO - Enriching GitHub lead: 0xDevNerd
+2026-05-29 10:41:19,304 - GitHubEnricher - INFO - Enriching GitHub lead: solidity_builder
+2026-05-29 10:41:19,305 - GitHubEnricher - INFO - Enriching GitHub lead: rust_ace
+2026-05-29 10:41:19,305 - GitHubEnricher - INFO - Enriching GitHub lead: defi_ninja
+2026-05-29 10:41:19,305 - OnchainEnricher - INFO - Enriching on-chain address: 0x04c80165...
+2026-05-29 10:41:19,306 - OnchainEnricher - INFO - Enriching on-chain address: 0xe35e5683...
+2026-05-29 10:41:19,307 - OnchainEnricher - INFO - Enriching on-chain address: 0x0dfdf54a...
+2026-05-29 10:41:19,308 - OnchainEnricher - INFO - Enriching on-chain address: 0x89a1de46...
+2026-05-29 10:41:19,308 - EnricherPipeline - INFO - Completed enrichment batch. Enriched: 16 leads.
+2026-05-29 10:41:19,596 - LeadsRouter - INFO - Background pipeline run finished. Processed and saved 16 leads.
+2026-05-29 10:42:28,271 - OutreachRouter - INFO - Generating personalized outreach message for Lead tw_seed_101 (Elena Alchemist) - Stage: day_3_followup
+2026-05-29 10:42:28,285 - OutreachTracker - INFO - Logging outreach event: Lead tw_seed_101 -> Stage: day_3_followup
+2026-05-29 10:42:28,338 - OutreachRouter - INFO - Generating personalized outreach message for Lead tw_seed_101 (Elena Alchemist) - Stage: day_3_followup
+2026-05-29 10:42:28,339 - OutreachTracker - INFO - Logging outreach event: Lead tw_seed_101 -> Stage: day_3_followup
+2026-05-29 10:42:28,441 - OutreachRouter - INFO - Generating personalized outreach message for Lead tw_seed_101 (Elena Alchemist) - Stage: day_3_followup
+2026-05-29 10:42:28,443 - OutreachTracker - INFO - Logging outreach event: Lead tw_seed_101 -> Stage: day_3_followup
+2026-05-29 10:42:32,637 - OutreachRouter - INFO - Generating personalized outreach message for Lead tw_seed_101 (Elena Alchemist) - Stage: day_7_breakup
+2026-05-29 10:42:32,637 - OutreachTracker - INFO - Logging outreach event: Lead tw_seed_101 -> Stage: day_7_breakup
+2026-05-29 10:42:40,426 - OutreachRouter - INFO - Generating personalized outreach message for Lead tw_seed_101 (Elena Alchemist) - Stage: day_1_pitch
+2026-05-29 10:42:40,426 - OutreachTracker - INFO - Logging outreach event: Lead tw_seed_101 -> Stage: day_1_pitch

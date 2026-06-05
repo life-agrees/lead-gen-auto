@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment & secrets
+.env
+.venv
+env/
+venv/
+
+# Local databases & scraped data
+data/**/*.json
+data/**/*.db
+data/**/*.sqlite
+data/raw/*
+data/enriched/*
+data/scored/*
+!data/raw/.gitkeep
+!data/enriched/.gitkeep
+!data/scored/.gitkeep
+
+# Unit test / coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node/React Frontend
+dashboard/node_modules/
+dashboard/dist/
+dashboard/build/
+dashboard/.env
+dashboard/.env.local
+dashboard/npm-debug.log*
+dashboard/yarn-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
