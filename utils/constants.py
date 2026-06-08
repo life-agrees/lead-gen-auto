@@ -74,6 +74,11 @@ ONCHAIN_MIN_TRANSACTIONS  = 3      # minimum tx count with watched contract
 ONCHAIN_ACTIVE_DAYS       = 7     # only wallets active in last N days
 ONCHAIN_MIN_ETH_BALANCE   = 0.01   # filter out dust wallets
 
+# ── DexScreener — new launches (high intent ICP signal) ──────
+DEXSCREENER_CHAINS = ["base", "polygon", "arbitrum"]
+DEXSCREENER_MIN_LIQUIDITY  = 10_000   # $10k minimum — filters dust
+DEXSCREENER_MAX_AGE_DAYS   = 60       # only recent launches
+
 # ── Dune query IDs ────────────────────────────────────────────
 # Pre-built Dune queries that return relevant wallets.
 # Create these on dune.com and paste their IDs here.
@@ -114,6 +119,7 @@ class LeadSource:
     ONCHAIN = "onchain"
     GITHUB  = "github"
     DUNE    = "dune"
+    DEXSCREENER = "dexscreener"
 
 # ── Twitter API limits ────────────────────────────────────────
 TWITTER_MAX_RESULTS_PER_QUERY = 10    # free tier: 10 per request

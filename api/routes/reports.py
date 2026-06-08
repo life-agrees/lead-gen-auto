@@ -71,3 +71,67 @@ def get_dashboard_summary() -> Dict[str, Any]:
         "funnel_metrics": funnel,
         "recent_logs_count": len(logs)
     }
+
+@router.get("/pipeline-report")
+def get_pipeline_report() -> Dict[str, Any]:
+    """Returns enriched pipeline analytics: stage conversion rates, top leads, and stage performance metrics."""
+    leads = db.get_leads(0.0)
+    logs = db.get_outreach_logs()
+
+    # Stage performance — messages sent per stage + reply rate
+    stages = ["day_1_pitch", "day_3_followup", "day_7_breakup"]
+    stage_perf: Dict[str, Dict] = {}
+    for stage in stages:
+        stage_logs = [l for l in logs if l.get("stage") == stage]
+        sent = len(stage_logs)
+        replied = sum(1 for l in stage_logs if l.get("status") == "replied")
+        opened = sum(1 for l in stage_logs if l.get("status") in ("opened", "replied"))
+        stage_perf[stage] = {
+            "sent": sent,
+            "opened": opened,
+            "replied": replied,
+            "reply_rate": round((replied / max(sent, 1)) * 100, 1),
+            "open_rate": round((opened / max(sent, 1)) * 100, 1),
+        }
+
+    # Top 5 leads by score
+    sorted_leads = sorted(leads, key=lambda l: l.get("score", 0), reverse=True)
+    top_leads = [
+        {
+            "id": l.get("id"),
+            "name": l.get("name", "Unknown"),
+            "username": l.get("username", ""),
+            "score": l.get("score", 0),
+            "source": l.get("source", ""),
+            "outreach_status": l.get("outreach_status", "discovered"),
+        }
+        for l in sorted_leads[:5]
+    ]
+
+    # Daily activity — count logs per day (last 7 days)
+    from collections import defaultdict
+    from datetime import datetime, timezone, timedelta
+    daily_counts: Dict[str, int] = defaultdict(int)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    for log in logs:
+        sent_at_raw = log.get("sent_at")
+        if sent_at_raw:
+            try:
+                sent_at = datetime.fromisoformat(sent_at_raw.replace("Z", "+00:00"))
+                if sent_at >= cutoff:
+                    day_key = sent_at.strftime("%Y-%m-%d")
+                    daily_counts[day_key] += 1
+            except Exception:
+                pass
+
+    daily_activity = [
+        {"date": k, "count": v}
+        for k, v in sorted(daily_counts.items())
+    ]
+
+    return {
+        "stage_performance": stage_perf,
+        "top_leads": top_leads,
+        "daily_activity": daily_activity,
+        "total_messages_sent": len(logs),
+    }

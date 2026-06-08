@@ -18,7 +18,7 @@ class LeadBase(BaseModel):
     tx_count: Optional[int] = 0
     eth_balance: Optional[float] = 0.0
     score: Optional[float] = 0.0
-    score_breakdown: Optional[Dict[str, float]] = {}
+    score_breakdown: Optional[Dict[str, Any]] = {}
     outreach_status: Optional[str] = "discovered"
     last_contacted: Optional[str] = None
     created_at: Optional[str] = None

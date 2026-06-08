@@ -13,6 +13,7 @@ import sys
 from utils.logger import get_logger
 from discovery.twitter_scraper import run_twitter_scraper
 from discovery.onchain_scanner import run_onchain_scanner
+from discovery.dexscreener_scraper import run_dexscreener_scraper
 
 logger = get_logger("run_discovery")
 
@@ -23,9 +24,10 @@ def main():
 
     twitter_count = 0
     onchain_count = 0
+    dexscreener_count = 0
 
     logger.info("═══════════════════════════════════════════")
-    logger.info("  Lead Gen Discovery Pipeline — Week 1     ")
+    logger.info("  Trovr.ai Discovery Pipeline — Week 5     ")
     logger.info("═══════════════════════════════════════════")
 
     if run_all or "--twitter" in args:
@@ -34,10 +36,13 @@ def main():
     if run_all or "--onchain" in args:
         onchain_count = run_onchain_scanner()
 
-    total = twitter_count + onchain_count
+    if run_all or "--dexscreener" in args:
+        dexscreener_count = run_dexscreener_scraper()
+
+    total = twitter_count + onchain_count + dexscreener_count
     logger.info("═══════════════════════════════════════════")
     logger.info(f"  Total new leads inserted: {total}")
-    logger.info(f"  Twitter: {twitter_count}  |  On-chain: {onchain_count}")
+    logger.info(f"  Twitter: {twitter_count}  |  On-chain: {onchain_count}  |  DexScreener: {dexscreener_count}")
     logger.info("═══════════════════════════════════════════")
 
 

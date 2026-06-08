@@ -2,9 +2,8 @@
 # outreach/message_generator.py
 # Multi-LLM message generator for personalized outreach.
 #
-# Fix 1: Added _build_lead_summary(), data-guard (skips leads with
-# no usable signal), strict builder-to-builder prompt, and an
-# INSUFFICIENT_DATA sentinel so the LLM can signal sparse data.
+# Generates lead-specific, human-toned DMs using each lead's
+# actual signals (bio, tweets, repos, on-chain activity, ENS).
 # ─────────────────────────────────────────────────────────────
 
 import os
@@ -15,11 +14,24 @@ from utils.logger import get_logger
 load_dotenv()
 logger = get_logger("LLMMessageGenerator")
 
-# ── Sender context injected into every prompt ─────────────────
-SENDER_CONTEXT = """
-You represent TrenchyBet — a crypto analytics and lead intelligence
-platform built for serious Web3 operators. We give high-signal teams
-10 free leads sourced from on-chain + social data, no strings attached.
+
+# ── LLM Persona — injected as system message where supported ──
+# This is what makes the output sound like a real person, not a bot.
+SYSTEM_PERSONA = """\
+You are a real person reaching out on Twitter/X — a Web3 builder yourself,
+reaching out to other builders you've noticed in the space.
+You write the way a thoughtful founder would write in a DM:
+short, specific, and direct. Never robotic. Never using buzzwords.
+Never starting with "Hey there!" or "I came across your profile."
+Every message you write references something real and specific about the person.
+"""
+
+# ── Trovr.ai context for the LLM to understand who we represent ─
+TROVR_CONTEXT = """\
+You represent Trovr.ai — a Web3 lead intelligence platform that surfaces
+high-signal builders, founders, and DeFi operators from on-chain activity,
+GitHub contributions, and social footprints.
+The offer: 10 free leads sourced from live data, no strings attached.
 """
 
 
@@ -34,12 +46,16 @@ def _build_lead_summary(lead: dict) -> str:
         lines.append(f"Twitter handle: @{handle}")
 
     name = lead.get("name") or lead.get("display_name") or ""
-    if name and name != handle:
-        lines.append(f"Display name: {name}")
+    if name and name.lower() != handle.lower():
+        lines.append(f"Name: {name}")
 
     bio = lead.get("bio") or ""
     if bio:
         lines.append(f"Bio: {bio}")
+
+    source = lead.get("source") or ""
+    if source:
+        lines.append(f"Discovered via: {source}")
 
     wallet = lead.get("wallet_address") or ""
     if wallet:
@@ -54,7 +70,7 @@ def _build_lead_summary(lead: dict) -> str:
 
     tx_count = raw.get("tx_count") or lead.get("tx_count") or 0
     if tx_count:
-        lines.append(f"Total transactions: {tx_count}")
+        lines.append(f"Total on-chain transactions: {tx_count:,}")
 
     chains = raw.get("chains_active") or lead.get("chains_active") or []
     if chains:
@@ -65,8 +81,8 @@ def _build_lead_summary(lead: dict) -> str:
         lines.append(f"Contracts deployed: {', '.join(str(c) for c in contracts[:3])}")
 
     eth_balance = raw.get("eth_balance") or lead.get("eth_balance") or 0
-    if eth_balance:
-        lines.append(f"ETH balance: {eth_balance:.4f} ETH")
+    if eth_balance and float(eth_balance) > 0.0001:
+        lines.append(f"ETH/liquidity on-chain: {float(eth_balance):,.4f}")
 
     has_solidity = raw.get("has_solidity") or False
     if has_solidity:
@@ -85,34 +101,67 @@ def _build_lead_summary(lead: dict) -> str:
     if public_repos:
         lines.append(f"Public repos: {public_repos}")
 
-    # Twitter/social signals
-    tweets = raw.get("recent_tweets") or []
-    if tweets:
-        sample = tweets[:3]
-        formatted = [f'  • "{t}"' for t in sample]
-        lines.append("Recent tweets:\n" + "\n".join(formatted))
-
-    followers = raw.get("followers_count") or lead.get("followers_count") or 0
-    if followers:
-        lines.append(f"Followers: {followers:,}")
-
     repo_contributed = raw.get("repo_contributed") or lead.get("repo_contributed") or ""
     if repo_contributed:
         lines.append(f"Notable contribution: {repo_contributed}")
 
-    source = lead.get("source") or ""
-    if source:
-        lines.append(f"Discovered via: {source}")
+    # Twitter/social signals
+    tweets = raw.get("recent_tweets") or []
+    if tweets:
+        sample = tweets[:3]
+        # Handle both string and dict tweet formats
+        formatted_tweets = []
+        for t in sample:
+            text = t.get("text", t) if isinstance(t, dict) else t
+            formatted_tweets.append(f'  • "{str(text)[:140]}"')
+        lines.append("Recent tweets:\n" + "\n".join(formatted_tweets))
+
+    followers = raw.get("followers_count") or lead.get("followers_count") or 0
+    if followers:
+        lines.append(f"Twitter followers: {followers:,}")
 
     score = lead.get("score") or 0
     if score:
-        lines.append(f"Lead score: {score}/100")
+        lines.append(f"Lead fit score: {score}/100")
 
     return "\n".join(lines) if lines else "(no data available)"
 
 
+def _get_best_signal(lead: dict) -> str:
+    """Pull out the single strongest personalisation hook for follow-ups."""
+    raw = lead.get("raw_data") or {}
+
+    ens = raw.get("ens_name") or ""
+    if ens:
+        return f"their ENS name {ens}"
+
+    tweets = raw.get("recent_tweets") or []
+    if tweets:
+        t = tweets[0]
+        text = t.get("text", t) if isinstance(t, dict) else t
+        return f'their tweet: "{str(text)[:80]}"'
+
+    repos = raw.get("top_repos") or []
+    if repos:
+        return f"their work on {repos[0].split('/')[-1]}"
+
+    repo_contributed = raw.get("repo_contributed") or lead.get("repo_contributed") or ""
+    if repo_contributed:
+        return f"their contribution to {repo_contributed}"
+
+    bio = lead.get("bio") or ""
+    if bio:
+        return f'their bio: "{bio[:60]}"'
+
+    chains = raw.get("chains_active") or lead.get("chains_active") or []
+    if chains:
+        return f"their on-chain activity on {', '.join(chains)}"
+
+    source = lead.get("source") or ""
+    return f"their {source} footprint" if source else "their Web3 work"
+
+
 class LLMMessageGenerator:
-    # Providers we actually support
     SUPPORTED_PROVIDERS = {"mock", "openai", "anthropic", "gemini", "grok", "groq"}
 
     def __init__(self):
@@ -123,7 +172,6 @@ class LLMMessageGenerator:
         self.grok_key = os.getenv("GROK_API_KEY")
         self.groq_key = os.getenv("GROQ_API_KEY")
 
-        # If the configured provider isn't in our supported list, fall back
         if self.provider not in self.SUPPORTED_PROVIDERS:
             logger.warning(
                 f"Provider '{self.provider}' is not supported. "
@@ -131,7 +179,6 @@ class LLMMessageGenerator:
                 f"Falling back to best available."
             )
             self._fallback_provider(self.provider)
-        # Check that the selected supported provider actually has a key
         elif self.provider == "openai" and not self.openai_key:
             self._fallback_provider("openai")
         elif self.provider == "anthropic" and not self.anthropic_key:
@@ -147,14 +194,14 @@ class LLMMessageGenerator:
 
     def _fallback_provider(self, failed: str):
         """Attempts to find any secondary active API key before resorting to mock fallback."""
-        if self.gemini_key:
+        if self.groq_key:
+            self.provider = "groq"
+        elif self.gemini_key:
             self.provider = "gemini"
         elif self.openai_key:
             self.provider = "openai"
         elif self.anthropic_key:
             self.provider = "anthropic"
-        elif self.grok_key:
-            self.provider = "grok"
         else:
             self.provider = "mock"
         logger.warning(f"Preferred provider '{failed.upper()}' lacks API Key. Auto-switched to: {self.provider.upper()}")
@@ -164,7 +211,7 @@ class LLMMessageGenerator:
         Entry point for all message generation.
 
         Returns the generated message string, or "" if the lead has
-        insufficient data for a personalised message (Fix 1 guard).
+        insufficient data for a personalised message.
         """
         if stage == "day_1_pitch":
             return self._generate_intro(lead)
@@ -173,13 +220,11 @@ class LLMMessageGenerator:
         else:  # day_7_breakup
             return self._generate_followup(lead, day=7)
 
-    # ── Fix 1: Data-guarded intro generator ──────────────────
-
     def _generate_intro(self, lead: dict) -> str:
-        """Generate a highly personalised Day-1 DM. Returns '' if data is too thin."""
+        """Generate a highly personalised Day-1 DM."""
         lead_summary = _build_lead_summary(lead)
 
-        # Guard: require at least ONE specific signal
+        # Require at least ONE specific signal before spending an LLM call
         bio     = lead.get("bio") or ""
         raw     = lead.get("raw_data") or {}
         tweets  = raw.get("recent_tweets") or []
@@ -190,35 +235,36 @@ class LLMMessageGenerator:
         has_signal = bool(bio or tweets or wallet or repos or has_sol)
         if not has_signal:
             handle = lead.get("twitter_handle") or lead.get("username") or "unknown"
-            logger.warning(
-                f"Lead @{handle} has too little data for personalised outreach — skipping"
-            )
+            logger.warning(f"Lead @{handle} has too little data for personalised outreach — skipping")
             return ""
 
-        prompt = f"""
-{SENDER_CONTEXT}
+        prompt = f"""\
+{TROVR_CONTEXT}
 
-You're writing a cold Twitter/X DM to this Web3 founder/builder.
+You're writing a cold DM on Twitter/X to this Web3 builder.
 Here is everything we know about them:
 
 {lead_summary}
 
-STRICT rules for this message:
-- You MUST reference something SPECIFIC from their data above
-  (a real tweet they posted, their ENS name, a contract they
-  interacted with, a GitHub repo they own, their bio claim)
-- If you cannot find ONE specific thing to reference,
-  return the exact text: INSUFFICIENT_DATA
-- Max 3 sentences total
-- Sentence 1: the specific observation about THEM (not us)
-- Sentence 2: one line about TrenchyBet as credibility
-- Sentence 3: offer 10 free leads, no strings, reply to claim
-- Zero corporate language. Zero "I hope this finds you well."
-- Do NOT use the words: pipeline, synergy, automate, leverage
-- Sound like a builder texting a builder
+Write a DM that:
+- Opens by referencing something SPECIFIC and REAL from the data above
+  (one of their actual tweets, their ENS name, a GitHub repo they own,
+  a specific chain they're active on, or something unique in their bio).
+  Do NOT make something up or be vague.
+- Briefly explains what Trovr.ai does in ONE plain sentence — not a sales pitch,
+  just context so they understand why you're reaching out.
+- Ends with a low-pressure offer: 10 free leads from our data, reply to claim.
+- Is 2–4 sentences max. Short and direct.
+- Sounds like a real person writing to another builder they respect.
+  Semi-casual, semi-formal. Like a colleague, not a salesperson.
+- Does NOT start with "Hey [name]!" or "Hope this finds you well" or
+  "I came across your profile".
+- Does NOT use any of these words: pipeline, synergy, leverage, automate,
+  optimize, solutions, ecosystem (as buzzwords).
+- If you genuinely cannot find ONE specific thing from their data to reference,
+  return exactly: INSUFFICIENT_DATA
 
-Return ONLY the message. No preamble. No sign-off. No quotes.
-"""
+Return ONLY the message text. No quotes around it. No preamble."""
 
         if self.provider == "mock":
             return self._generate_templated_mock(lead, "day_1_pitch")
@@ -241,28 +287,45 @@ Return ONLY the message. No preamble. No sign-off. No quotes.
             return self._generate_templated_mock(lead, "day_1_pitch")
 
     def _generate_followup(self, lead: dict, day: int = 3) -> str:
-        """Generate Day-3 or Day-7 follow-up message."""
-        name = lead.get("name") or lead.get("display_name") or "there"
+        """Generate Day-3 or Day-7 follow-up — lead-specific, not generic."""
+        name   = lead.get("name") or lead.get("display_name") or "there"
         handle = lead.get("twitter_handle") or lead.get("username") or "unknown"
+        signal = _get_best_signal(lead)
 
         if day == 3:
-            prompt = f"""
-{SENDER_CONTEXT}
+            prompt = f"""\
+{TROVR_CONTEXT}
 
-Write a 1-sentence follow-up DM to @{handle} (name: {name}).
-They haven't replied to our first message 3 days ago about TrenchyBet.
-Keep it casual, zero-pressure. No "just checking in". Sound human.
-Return ONLY the message.
-"""
+Write a short follow-up DM to @{handle} (name: {name}).
+3 days ago we reached out about Trovr.ai — they haven't replied.
+
+What we know about them: {signal}
+
+Guidelines:
+- 1–2 sentences max.
+- Reference what we noticed about them ({signal}) to show this isn't a mass message.
+- Low-pressure, no guilt-tripping, no "just checking in".
+- Semi-casual, semi-formal — like a colleague nudging, not a salesperson following up.
+- Do NOT start with "Hey" or "Hi [name]".
+
+Return ONLY the message."""
         else:
-            prompt = f"""
-{SENDER_CONTEXT}
+            prompt = f"""\
+{TROVR_CONTEXT}
 
-Write a friendly "closing the loop" DM to @{handle} (name: {name}).
-This is the last message in our sequence — we're closing their slot.
-Be warm, wish them well, leave the door open. Max 2 sentences.
-Return ONLY the message.
-"""
+Write a short final DM to @{handle} (name: {name}).
+This is the last message in our outreach sequence — we're closing their slot.
+
+What we know about them: {signal}
+
+Guidelines:
+- 1–2 sentences max.
+- Reference what caught our attention about them ({signal}).
+- Warm, no hard feelings, leave the door genuinely open.
+- Sound like a real person, not a bot closing a CRM ticket.
+- Semi-casual, semi-formal.
+
+Return ONLY the message."""
 
         if self.provider == "mock":
             stage = "day_3_followup" if day == 3 else "day_7_breakup"
@@ -302,9 +365,12 @@ Return ONLY the message.
             client = OpenAI(api_key=self.openai_key)
             completion = client.chat.completions.create(
                 model="gpt-4o",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-                temperature=0.7
+                messages=[
+                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "user",   "content": prompt}
+                ],
+                max_tokens=250,
+                temperature=0.9
             )
             return completion.choices[0].message.content.strip()
         except Exception as e:
@@ -317,9 +383,9 @@ Return ONLY the message.
             client = anthropic.Anthropic(api_key=self.anthropic_key)
             message = client.messages.create(
                 model="claude-3-5-sonnet-20241022",
-                max_tokens=200,
-                temperature=0.7,
-                system="You are a professional outreach automation bot.",
+                max_tokens=250,
+                temperature=0.9,
+                system=SYSTEM_PERSONA,
                 messages=[{"role": "user", "content": prompt}]
             )
             return message.content[0].text.strip()
@@ -333,7 +399,7 @@ Return ONLY the message.
             client = genai.Client(api_key=self.gemini_key)
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=prompt,
+                contents=f"{SYSTEM_PERSONA}\n\n{prompt}",
             )
             return response.text.strip()
         except Exception as e:
@@ -342,7 +408,6 @@ Return ONLY the message.
 
     def _call_grok(self, prompt: str) -> str:
         try:
-            # xAI Grok API uses OpenAI SDK specification
             from openai import OpenAI
             client = OpenAI(
                 api_key=self.grok_key,
@@ -350,8 +415,12 @@ Return ONLY the message.
             )
             completion = client.chat.completions.create(
                 model="grok-3",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200
+                messages=[
+                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "user",   "content": prompt}
+                ],
+                max_tokens=250,
+                temperature=0.9
             )
             return completion.choices[0].message.content.strip()
         except Exception as e:
@@ -359,14 +428,19 @@ Return ONLY the message.
             raise
 
     def _call_groq(self, prompt: str) -> str:
+        """Groq call — uses system persona + high temperature for natural variation."""
         try:
             from groq import Groq
             client = Groq(api_key=self.groq_key)
+            model = os.getenv("DEFAULT_LLM_MODEL", "llama-3.3-70b-versatile")
             completion = client.chat.completions.create(
-                model=os.getenv("DEFAULT_LLM_MODEL", "llama3-70b-8192"),
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-                temperature=0.7
+                model=model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "user",   "content": prompt}
+                ],
+                max_tokens=250,
+                temperature=0.9       # Higher = more natural variation between leads
             )
             return completion.choices[0].message.content.strip()
         except Exception as e:
@@ -374,7 +448,8 @@ Return ONLY the message.
             raise
 
     def _generate_templated_mock(self, lead: Dict[str, Any], stage: str) -> str:
-        """Fallback mock message generator — used when no LLM keys are configured."""
+        """Fallback mock message generator — used when no LLM keys are configured.
+        Each message uses the richest available signal to simulate personalization."""
         name   = lead.get("name") or lead.get("display_name") or "there"
         source = lead.get("source", "web3")
         bio    = lead.get("bio", "")
@@ -382,52 +457,61 @@ Return ONLY the message.
         tweets = raw.get("recent_tweets") or []
         repos  = raw.get("top_repos") or []
         ens    = raw.get("ens_name") or ""
+        chains = raw.get("chains_active") or lead.get("chains_active") or []
 
         if stage == "day_1_pitch":
-            # Try to use the richest available signal
             if ens:
                 return (
                     f"Saw your ENS {ens} — clearly you're serious about on-chain identity. "
-                    f"We built TrenchyBet to surface operators like you before the crowd does. "
+                    f"We built Trovr.ai to surface operators like you before the crowd does. "
                     f"Reply and I'll drop 10 free leads for you, no strings."
                 )
             elif tweets:
-                snippet = tweets[0][:80].strip()
+                t = tweets[0]
+                snippet = (t.get("text", t) if isinstance(t, dict) else t)[:80].strip()
                 return (
-                    f"Caught your tweet: \"{snippet}\" — that's exactly the kind of signal we track. "
-                    f"TrenchyBet maps Web3 builder graphs to surface high-quality deal flow. "
+                    f'Caught your tweet: "{snippet}" — that\'s exactly the signal we track at Trovr.ai. '
+                    f"We map Web3 builder graphs to surface high-quality deal flow. "
                     f"Reply and I'll send you 10 free leads."
                 )
             elif repos:
                 repo = repos[0].split("/")[-1]
                 return (
-                    f"Your work on {repo} caught our attention — deep builder energy. "
-                    f"TrenchyBet tracks on-chain + social signals to surface operators like you. "
+                    f"Your work on {repo} caught our attention — solid builder energy. "
+                    f"Trovr.ai tracks on-chain + social signals to surface operators like you. "
                     f"Reply and grab 10 free leads, on us."
+                )
+            elif chains:
+                chain_str = " and ".join(chains[:2])
+                return (
+                    f"Your activity across {chain_str} has you on our radar as a serious operator. "
+                    f"Trovr.ai surfaces high-signal deal flow for builders at your level. "
+                    f"Reply for 10 free leads, no pitch, no strings."
                 )
             elif bio:
                 snippet = bio[:60].strip()
                 return (
-                    f"Your bio — \"{snippet}\" — is exactly what we look for when sourcing deal flow. "
-                    f"TrenchyBet maps Web3 builder graphs in real time. "
-                    f"Reply for 10 free leads, no pitch, no strings."
+                    f'Your bio — "{snippet}..." — is exactly what we look for when sourcing deal flow. '
+                    f"Trovr.ai maps Web3 builder graphs in real time. "
+                    f"Reply for 10 free leads, no obligations."
                 )
             else:
-                # Bare minimum — generic but at least not "Hi {name}, saw your bio"
                 return (
                     f"Your {source} activity has you on our radar as a serious Web3 operator. "
-                    f"TrenchyBet surfaces high-conviction deal flow for builders like you. "
+                    f"Trovr.ai surfaces high-conviction deal flow for builders like you. "
                     f"Reply and I'll send 10 free leads to your inbox."
                 )
 
         elif stage == "day_3_followup":
+            signal = _get_best_signal(lead)
             return (
-                f"Hey {name} — bumping this up in case it got buried. "
-                f"Still happy to drop those 10 free leads if the timing's better now."
+                f"Bumping this — noticed {signal} and thought this was worth a second look. "
+                f"Still happy to drop those 10 free Trovr.ai leads if now's a better time."
             )
 
         else:  # day_7_breakup
+            signal = _get_best_signal(lead)
             return (
-                f"No worries {name}, I'll close out your slot. "
-                f"Good luck with whatever you're building — feel free to ping if you circle back."
+                f"Closing out your slot — genuinely found {signal} interesting, "
+                f"feel free to ping if you ever want to revisit. Good luck with the build."
             )

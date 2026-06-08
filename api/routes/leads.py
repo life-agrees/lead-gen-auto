@@ -6,6 +6,7 @@ from discovery.twitter_scraper import TwitterScraper
 from discovery.github_scraper import GitHubScraper
 from discovery.onchain_scanner import OnchainScanner
 from discovery.discord_monitor import DiscordMonitor
+from discovery.dexscreener_scraper import DexScreenerScraper
 from enrichment.enricher_pipeline import EnricherPipeline
 from scoring.rule_scorer import RuleScorer
 from scoring.ml_scorer import MLScorer
@@ -20,6 +21,7 @@ twitter_scraper = TwitterScraper()
 github_scraper = GitHubScraper()
 onchain_scanner = OnchainScanner()
 discord_monitor = DiscordMonitor()
+dexscreener_scraper = DexScreenerScraper()
 enricher_pipeline = EnricherPipeline()
 rule_scorer = RuleScorer()
 ml_scorer = MLScorer()
@@ -35,6 +37,7 @@ def run_discovery_and_enrichment_task(limit: int = 5):
         raw_leads.extend(github_scraper.search_active_contributors(limit=limit))
         raw_leads.extend(onchain_scanner.scan_active_wallets(limit=limit))
         raw_leads.extend(discord_monitor.listen_keywords(limit=limit))
+        raw_leads.extend(dexscreener_scraper.search_leads(limit=limit))
 
         # 2. Enrichment batch
         enriched_leads = enricher_pipeline.enrich_batch(raw_leads)
@@ -57,6 +60,47 @@ def run_discovery_and_enrichment_task(limit: int = 5):
         logger.info(f"Background pipeline run finished. Processed and saved {len(enriched_leads)} leads.")
     except Exception as e:
         logger.error(f"Background pipeline run crashed: {str(e)}")
+
+@router.get("/stats")
+def get_leads_stats() -> Dict[str, Any]:
+    """Returns aggregated pipeline stats used by the Week 5 dashboard charts."""
+    leads = db.get_leads(0.0)
+
+    # Tier breakdown (Hot ≥70, Warm 40-69, Cold <40)
+    hot = sum(1 for l in leads if l.get("score", 0) >= 70)
+    warm = sum(1 for l in leads if 40 <= l.get("score", 0) < 70)
+    cold = sum(1 for l in leads if l.get("score", 0) < 40)
+
+    # Pipeline stage counts
+    stage_counts = {
+        "discovered": 0,
+        "scored": 0,
+        "contacted": 0,
+        "replied": 0,
+    }
+    for lead in leads:
+        status = lead.get("outreach_status", "discovered").lower()
+        if status in ("discovered",):
+            stage_counts["discovered"] += 1
+        elif status == "scored":
+            stage_counts["scored"] += 1
+        elif "day_" in status:
+            stage_counts["contacted"] += 1
+        elif status == "replied":
+            stage_counts["replied"] += 1
+
+    # Source distribution
+    sources: Dict[str, int] = {}
+    for lead in leads:
+        src = lead.get("source", "unknown").lower()
+        sources[src] = sources.get(src, 0) + 1
+
+    return {
+        "total": len(leads),
+        "tiers": {"hot": hot, "warm": warm, "cold": cold},
+        "pipeline": stage_counts,
+        "sources": sources,
+    }
 
 @router.get("/", response_model=List[LeadBase])
 def read_leads(min_score: float = Query(0.0, description="Minimum lead fit score to filter by")):

@@ -540,11 +540,13 @@ def update_lead(lead_id: str, updates: dict) -> Optional[dict]:
             logger.error(f"update_lead SQLite failed: {exc}")
             return None
 
-def lead_exists(twitter_handle: str = None, wallet_address: str = None) -> bool:
+def lead_exists(twitter_handle: str = None, wallet_address: str = None, lead_id: str = None) -> bool:
     db = DatabaseClient()
     if db.use_supabase:
         query = db.client.table("leads").select("id")
-        if twitter_handle:
+        if lead_id:
+            query = query.eq("id", lead_id)
+        elif twitter_handle:
             query = query.eq("twitter_handle", twitter_handle.lower())
         elif wallet_address:
             query = query.eq("wallet_address", wallet_address.lower())
@@ -556,7 +558,10 @@ def lead_exists(twitter_handle: str = None, wallet_address: str = None) -> bool:
         except Exception:
             return False
     else:
-        if twitter_handle:
+        if lead_id:
+            query = "SELECT id FROM leads WHERE id = ?"
+            val = lead_id
+        elif twitter_handle:
             query = "SELECT id FROM leads WHERE username = ? OR id = ?"
             val = twitter_handle.lower()
         elif wallet_address:
@@ -565,7 +570,10 @@ def lead_exists(twitter_handle: str = None, wallet_address: str = None) -> bool:
         else:
             return False
         try:
-            res = db._execute_sqlite(query, (val, val), fetchone=True)
+            if lead_id:
+                res = db._execute_sqlite(query, (val,), fetchone=True)
+            else:
+                res = db._execute_sqlite(query, (val, val), fetchone=True)
             return res is not None
         except Exception:
             return False

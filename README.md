@@ -1,50 +1,48 @@
-# Lead Gen Automation // Cyber HUD & Scrapers Dashboard
+# Trovr.ai — Autonomous Web3 Lead Intelligence
 
-Lead Gen Automation is an end-to-end autonomous business development pipeline. It leverages multi-source scrapers, a dual-layer scoring model (custom heuristics + `scikit-learn` predictive classification), an LLM outreach manager with modular adapters (Claude, ChatGPT, Gemini, Grok), background apscheduler cron daemons, and a state-of-the-art cybernetic dashboard frontend built with React and Vite.
+**Trovr.ai** is an end-to-end autonomous lead generation and outreach engine, purpose-built for Web3 ICP targeting. It leverages multi-source scrapers (Twitter/X, GitHub, Discord, DexScreener, on-chain wallets), a dual-layer scoring model (custom heuristics + `scikit-learn` gradient boosting), an LLM outreach manager with modular provider adapters (Groq, Gemini, Claude, OpenAI), background APScheduler cron daemons, and a premium cybernetic intelligence dashboard built with React and Vite.
 
 ---
 
-## 🏗️ Core Architecture & Pipeline Flow
+## 🏗️ Architecture & Pipeline
 
 ```
-   [Discovery Scrapers] ── X (Twitter), GitHub, Discord, Blockchain Logs
+   [Discovery Scrapers] ── X (Twitter), GitHub, Discord, DexScreener, Blockchain Logs
             │
             ▼
    [Enrichment Engines] ── Profile Followers, Repo Languages, On-chain protocols
             │
             ▼
-   [Scoring Matrix] ───── Composite Heuristics + Scikit-Learn RandomForest Model
+   [Scoring Matrix] ───── Composite Heuristics + Scikit-Learn GradientBoosting Model
             │
             ▼
-   [FastAPI Core / DB] ── Unified JSON API (Supabase / local SQLite fallback)
+   [FastAPI Core / DB] ── Trovr.ai REST API (Supabase / local SQLite fallback)
             │
             ▼
-   [Cyber HUD React] ──── Responsive Glassmorphic Control Telemetry Table
+   [Intelligence Dashboard] ── React Glassmorphic HUD with Recharts Analytics
 ```
 
 ---
 
 ## ⚙️ Configuration & Secrets (.env)
 
-The application operates in **dual-mode**. If any external service credential is missing in `.env`, the pipeline gracefully falls back to local SQLite operations and realistic synthetic mockup data.
-
-To configure your pipeline, modify your local `.env`:
+Trovr.ai operates in **dual-mode**. If any external service credential is missing in `.env`, the pipeline gracefully falls back to local SQLite and realistic synthetic mock data.
 
 ```env
-# Database Settings (Leave empty for local SQLite data/lead_gen.db fallback)
+# Database (Leave empty for local SQLite at data/lead_gen.db)
 SUPABASE_URL=
 SUPABASE_KEY=
 
-# LLM Providers (Outreach message generator wraps and switches between these keys)
+# LLM Providers (Trovr.ai wraps and switches between these)
+GROQ_API_KEY=
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 GEMINI_API_KEY=
-GROK_API_KEY=
 
-# Preferred default provider: 'openai', 'anthropic', 'gemini', 'grok', or 'mock'
-DEFAULT_LLM_PROVIDER=mock
+# Preferred default LLM: 'groq', 'openai', 'anthropic', 'gemini', or 'mock'
+DEFAULT_LLM_PROVIDER=groq
 
-# Scraper Credentials (Optional)
+# Scraper Credentials (Optional — all fall back to mock if missing)
 TWITTER_BEARER_TOKEN=
 GITHUB_TOKEN=
 DUNE_API_KEY=
@@ -53,11 +51,9 @@ DISCORD_BOT_TOKEN=
 
 ---
 
-## 🚀 Speedrun Startup Guide
+## 🚀 Startup Guide
 
-### 1. Backend API Scaffolding & Setup
-
-Initialize your virtual environment, install python dependencies, and bootstrap initial seed leads:
+### 1. Backend
 
 ```bash
 # Install dependencies
@@ -66,30 +62,35 @@ pip install -r requirements.txt
 # (Optional) Pre-train the ML scorer on synthetic lead matrices
 python scoring/train.py
 
-# Launch FastAPI local webserver
+# Launch FastAPI backend
 uvicorn api.main:app --reload --port 8000
 ```
-FastAPI interactive Swagger documentation will immediately become active at `http://localhost:8000/docs`.
 
-### 2. React HUD Dashboard Setup
+Swagger docs available at `http://localhost:8000/docs`.
 
-Navigate to your dashboard directory, install dependencies, and spin up the premium dark-themed Vite HUD interface:
+### 2. Dashboard
 
 ```bash
-# Navigate to react workspace
 cd dashboard
-
-# Install packages
 npm install
-
-# Start local server
 npm run dev
 ```
-The React HUD console is active at `http://localhost:5173`.
 
-### 3. Background Pipeline Daemon
+Dashboard available at `http://localhost:5173`.
 
-To execute background interval loops (searching Web3 contributors, advancing Day 3 / Day 7 follow-up sequences automatically), start the cron scheduler:
+### 3. CLI Discovery Runner
+
+```bash
+# Run all scrapers
+python run_discovery.py
+
+# Run individual scrapers
+python run_discovery.py --twitter
+python run_discovery.py --onchain
+python run_discovery.py --dexscreener
+```
+
+### 4. Background Cron Daemon
 
 ```bash
 python scheduler/cron_jobs.py
@@ -97,9 +98,7 @@ python scheduler/cron_jobs.py
 
 ---
 
-## 🧪 Pipeline Validation & Testing
-
-Run the localized validation test suite via `pytest` to verify discovery models, mathematical scoring weights, and sequence calculators:
+## 🧪 Tests
 
 ```bash
 pytest tests/
@@ -107,12 +106,15 @@ pytest tests/
 
 ---
 
-## 🧬 Codebase Components Map
+## 🧬 Codebase Map
 
-* `discovery/` - Raw scraper logic tracking keywords, EVM balances, and repo contributions.
-* `enrichment/` - Adds followings, languages, and protocol usage context to raw leads.
-* `scoring/` - Rules engine weights (`rule_scorer.py`) and tabular model predictor (`ml_scorer.py`).
-* `outreach/` - Multi-LLM client wrapper (`message_generator.py`) and sequence tracking timers.
-* `api/` - FastAPI controllers, dual client (`supabase_client.py`), and reports aggregator.
-* `scheduler/` - APScheduler background loops coordinator.
-* `dashboard/` - High-fidelity React glassmorphism HUD frontend.
+| Module | Description |
+|--------|-------------|
+| `discovery/` | Multi-source scrapers — Twitter, GitHub, Discord, DexScreener, On-chain |
+| `enrichment/` | Adds followers, languages, protocol usage, and wallet context |
+| `scoring/` | Rule engine (`rule_scorer.py`) + ML predictor (`ml_scorer.py`) |
+| `outreach/` | LLM message generator, sequence tracker, and multi-stage dispatch |
+| `api/` | FastAPI controllers, dual-mode DB client, and analytics reports |
+| `scheduler/` | APScheduler background loop coordinator |
+| `dashboard/` | React + Recharts intelligence HUD with glassmorphic cyberpunk design |
+| `utils/` | Config, constants, logger, LLM client, and helpers |

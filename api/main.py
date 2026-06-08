@@ -9,8 +9,8 @@ import json
 logger = get_logger("APIServer")
 
 app = FastAPI(
-    title="Lead Gen Automation API",
-    description="Core backend pipeline servicing the automated discovery, scoring, and outreach sequencing loops.",
+    title="Trovr.ai API",
+    description="Core intelligence backend powering Trovr.ai — autonomous Web3 lead discovery, enrichment, scoring, and outreach sequencing.",
     version="1.0.0"
 )
 
@@ -116,6 +116,7 @@ def _seed_initial_data(db: DatabaseClient):
 def get_root():
     return {
         "status": "online",
-        "service": "Lead Gen Automation Backend Server",
+        "service": "Trovr.ai Intelligence Backend",
+        "version": "1.0.0",
         "documentation": "/docs"
     }
