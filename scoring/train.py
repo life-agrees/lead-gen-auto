@@ -62,7 +62,7 @@ def _make_lead(high_fit: bool) -> dict:
         commits   = random.randint(200, 3_000)
         eth       = random.uniform(0.5, 50.0)
         tx        = random.randint(50, 2_000)
-        chains    = random.sample(["polygon", "base", "arbitrum", "optimism"], k=random.randint(2, 4))
+        chains    = random.sample(["polygon", "base", "arbitrum", "optimism", "bsc"], k=random.randint(2, 4))
         ens       = "builder.eth" if random.random() > 0.4 else ""
         langs     = random.choice(_LANGUAGES_HIGH)
         bio       = random.choice(_BIOS_HIGH)

@@ -14,6 +14,7 @@ from typing import List, Dict, Any
 from utils.config import TWITTER_BEARER_TOKEN
 from utils.constants import (
     TWITTER_KEYWORDS,
+    TWITTER_NEGATIVE_KEYWORDS,
     TWITTER_MAX_RESULTS_PER_QUERY,
     TWITTER_MAX_LEADS_PER_RUN,
     LeadSource,
@@ -21,6 +22,7 @@ from utils.constants import (
 )
 from utils.logger import get_logger
 from api.db.supabase_client import bulk_insert_leads, lead_exists
+from utils.campaign import get_active_campaign
 
 logger = get_logger(__name__)
 
@@ -54,9 +56,17 @@ def search_keyword(
     leads = []
 
     try:
+        # Load from active campaign if available
+        campaign = get_active_campaign()
+        negative_keywords = campaign.get("twitter_negative_keywords") or TWITTER_NEGATIVE_KEYWORDS
+
+        # Construct query with negative keywords to filter noise (airdrop, giveaway, etc.)
+        neg_query = " ".join([f"-{kw}" for kw in negative_keywords])
+        search_query = f"{keyword} {neg_query} -is:retweet lang:en"
+
         # Only pull tweets from the last 7 days (recency matters)
         response = client.search_recent_tweets(
-            query=f"{keyword} -is:retweet lang:en",
+            query=search_query,
             max_results=max_results,
             tweet_fields=["author_id", "created_at", "text"],
             expansions=["author_id"],
@@ -143,13 +153,16 @@ class TwitterScraper:
         """Searches recent X/Twitter posts for keywords. Falls back to mock data if API limits hit."""
         logger.info(f"TwitterScraper: Starting search run (limit: {limit})")
         
+        campaign = get_active_campaign()
+        keywords = campaign.get("twitter_keywords") or TWITTER_KEYWORDS
+        
         if self.is_mock:
             logger.info("TwitterScraper running in Mock Data Mode (no valid Twitter Token).")
-            return self._generate_mock_leads(limit)
+            return self._generate_mock_leads(limit, keywords)
 
         leads = []
         try:
-            for keyword in TWITTER_KEYWORDS:
+            for keyword in keywords:
                 if len(leads) >= limit:
                     break
                 logger.info(f"TwitterScraper searching: '{keyword}'")
@@ -163,7 +176,7 @@ class TwitterScraper:
                     # Fill the rest with mock leads
                     remaining = limit - len(leads)
                     if remaining > 0:
-                        leads.extend(self._generate_mock_leads(remaining))
+                        leads.extend(self._generate_mock_leads(remaining, keywords))
                     break
                 
                 time.sleep(1)
@@ -171,10 +184,12 @@ class TwitterScraper:
             return leads[:limit]
         except Exception as e:
             logger.error(f"TwitterScraper failed to scrape: {e}. Returning mock leads.")
-            return self._generate_mock_leads(limit)
+            return self._generate_mock_leads(limit, keywords)
 
-    def _generate_mock_leads(self, limit: int) -> List[Dict[str, Any]]:
+    def _generate_mock_leads(self, limit: int, keywords: List[str] = None) -> List[Dict[str, Any]]:
         import random
+        if keywords is None:
+            keywords = TWITTER_KEYWORDS
         handles = ["0xAlchemist", "defi_princess", "solidity_guru", "base_builder", "zk_wizard", "eth_maximalist", "agent_dev_0x", "uniswap_hooker"]
         names = ["Elena Alchemist", "Sarah DeFi", "Raj Solidity", "Marcus Base", "ZK Wizard", "Vitalik Fan", "Agent Dev", "Uniswap Hook Dev"]
         bios = [
@@ -190,7 +205,7 @@ class TwitterScraper:
 
         leads = []
         for i in range(min(limit, len(handles))):
-            kw = random.choice(TWITTER_KEYWORDS)
+            kw = random.choice(keywords)
             handle = handles[i].lower()
             
             # Skip if already in DB

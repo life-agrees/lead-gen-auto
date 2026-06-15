@@ -120,3 +120,21 @@ def get_root():
         "version": "1.0.0",
         "documentation": "/docs"
     }
+
+@app.get("/api/status")
+def get_system_status():
+    """Returns real-time system status including active DB backend."""
+    db = DatabaseClient()
+    db_mode = "supabase" if db.use_supabase else "sqlite"
+    db_label = "SUPABASE" if db.use_supabase else "LOCAL_SQLITE"
+    try:
+        lead_count = len(db.get_leads(0.0))
+    except Exception:
+        lead_count = 0
+    return {
+        "status": "online",
+        "db_mode": db_mode,
+        "db_label": db_label,
+        "lead_count": lead_count,
+        "version": "1.0.0",
+    }

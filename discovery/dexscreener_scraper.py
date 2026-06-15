@@ -23,7 +23,9 @@ def get_new_pairs(chain: str, min_liquidity: int = 10_000) -> list[dict]:
     These are projects that just launched — highest intent ICP.
     """
     try:
-        resp  = requests.get(f"{BASE}/tokens/{chain}", timeout=10)
+        # DexScreener API expects 'bsc' for BNB Smart Chain
+        api_chain = "bsc" if chain == "bnb" else chain
+        resp  = requests.get(f"{BASE}/tokens/{api_chain}", timeout=10)
         pairs = resp.json().get("pairs") or []
 
         filtered = [

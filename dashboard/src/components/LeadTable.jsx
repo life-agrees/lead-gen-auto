@@ -86,6 +86,7 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
             <option value="github">GitHub</option>
             <option value="onchain">On-chain</option>
             <option value="discord">Discord</option>
+            <option value="dexscreener">DexScreener</option>
           </select>
 
           {/* Tier filter */}

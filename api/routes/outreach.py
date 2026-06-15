@@ -1,4 +1,7 @@
+import io
+import csv
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from typing import List, Dict, Any
 from api.db.supabase_client import DatabaseClient
 from api.db.models import OutreachLogBase, OutreachTrigger
@@ -18,36 +21,111 @@ tracker = OutreachTracker()
 def get_outreach_logs():
     """Retrieves standard history logs of sent, opened, or replied DMs/emails."""
     logs = db.get_outreach_logs()
+    # Sanitise None fields that would fail Pydantic str validation
+    for log in logs:
+        if log.get("sent_at") is None:
+            log["sent_at"] = ""
+        if log.get("send_after") is None:
+            log["send_after"] = ""
+        if log.get("status") is None:
+            log["status"] = "sent"
+        if log.get("message_body") is None:
+            log["message_body"] = ""
     return logs
+
+
+@router.get("/export")
+def export_outreach_csv(status: str = None):
+    """
+    Streams all outreach logs as a UTF-8 BOM CSV — ready for Google Sheets.
+    Optional ?status=sent|queued|replied filter.
+    """
+    try:
+        if db.db_mode == "supabase":
+            query = (
+                db.client.table("outreach_logs")
+                .select("*, leads(twitter_handle, display_name, score, score_tier, bio)")
+                .order("sent_at")
+            )
+            if status:
+                query = query.eq("status", status)
+            rows = (query.execute()).data or []
+        else:
+            # SQLite fallback — plain join
+            rows = db.get_outreach_logs()
+            if status:
+                rows = [r for r in rows if r.get("status") == status]
+
+        # Build CSV in memory
+        output = io.StringIO()
+        output.write("\ufeff")  # BOM — Google Sheets / Excel auto-detect UTF-8
+        writer = csv.writer(output)
+        writer.writerow([
+            "Twitter Handle",
+            "Display Name",
+            "Score",
+            "Tier",
+            "Bio (first 100 chars)",
+            "Outreach Message",
+            "Stage",
+            "Status",
+            "Sent At",
+            "Outreach ID",
+        ])
+
+        for row in rows:
+            lead = row.get("leads") or {}
+            writer.writerow([
+                lead.get("twitter_handle") or row.get("username", ""),
+                lead.get("display_name") or row.get("name", ""),
+                lead.get("score", ""),
+                lead.get("score_tier", ""),
+                (lead.get("bio") or "")[:100],
+                row.get("message_body", ""),
+                row.get("stage", ""),
+                row.get("status", ""),
+                row.get("sent_at", ""),
+                row.get("id", ""),
+            ])
+
+        output.seek(0)
+        logger.info(f"Dashboard CSV export: {len(rows)} outreach rows")
+
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": 'attachment; filename="trovr_outreach_export.csv"'
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Export failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
 
 @router.post("/trigger", response_model=OutreachLogBase)
 def trigger_outreach(trigger: OutreachTrigger):
-    """Triggers the LLM (Claude/ChatGPT/Gemini/Grok) message generator for a single lead, saving the event."""
+    """Triggers the LLM message generator for a single lead, saving the event."""
     lead_id = trigger.lead_id
     stage = trigger.stage or "day_1_pitch"
 
-    # 1. Fetch Lead
     lead = db.get_lead_by_id(lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Target lead not found.")
 
-    logger.info(f"Generating personalized outreach message for Lead {lead_id} ({lead.get('name')}) - Stage: {stage}")
+    logger.info(f"Generating outreach for Lead {lead_id} ({lead.get('name')}) - Stage: {stage}")
 
     try:
-        # 2. Generate personalized message
         message_body = msg_generator.generate_personalized_message(lead, stage)
-
-        # 3. Log event inside DB (updates lead status + creates log)
         log_entry = tracker.log_outreach_event(db, lead_id, stage, message_body)
-        
-        # Add basic lead keys to model response so the React dashboard renders them immediately
         log_entry["name"] = lead.get("name")
         log_entry["username"] = lead.get("username")
-        
         return log_entry
     except Exception as e:
-        logger.error(f"Failed to generate and track outreach message: {str(e)}")
+        logger.error(f"Failed to generate outreach message: {str(e)}")
         raise HTTPException(status_code=500, detail=f"LLM outreach execution failed: {str(e)}")
+
 
 @router.post("/logs/{log_id}/status")
 def update_log_status(log_id: str, lead_id: str, new_status: str):

@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from discovery.twitter_scraper import TwitterScraper
 from discovery.github_scraper import GitHubScraper
 from discovery.onchain_scanner import OnchainScanner
@@ -23,7 +24,9 @@ def test_github_scraper_mock():
         assert "username" in lead
         assert "repo_contributed" in lead
 
-def test_onchain_scanner_mock():
+@patch("discovery.onchain_scanner.scan_contract_interactions")
+def test_onchain_scanner_mock(mock_scan):
+    mock_scan.return_value = ["0x1234567890123456789012345678901234567890"]
     scanner = OnchainScanner()
     leads = scanner.scan_active_wallets(limit=2)
     assert len(leads) <= 2

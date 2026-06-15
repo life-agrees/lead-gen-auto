@@ -35,6 +35,8 @@ def get_dashboard_summary() -> Dict[str, Any]:
         source = lead.get("source", "").lower()
         if source in sources:
             sources[source] += 1
+        elif source == "dexscreener":
+            sources["dexscreener"] = sources.get("dexscreener", 0) + 1
             
         # Accumulate score averages
         score = lead.get("score", 0.0)
@@ -42,14 +44,20 @@ def get_dashboard_summary() -> Dict[str, Any]:
         if score >= 70.0:
             highly_fit_count += 1
             
-        # Segment funnel status
-        status = lead.get("outreach_status", "discovered").lower()
-        if status in ["discovered", "scored"]:
-            funnel[status] += 1
-        elif "day_" in status:
+        # Segment funnel status — check both `status` and `outreach_status` columns
+        outreach_status = (lead.get("outreach_status") or "discovered").lower()
+        lead_status = (lead.get("status") or "raw").lower()
+
+        if outreach_status in ("discovered",) and lead_status in ("raw", "discovered"):
+            funnel["discovered"] += 1
+        elif outreach_status == "scored" or lead_status == "scored":
+            funnel["scored"] += 1
+        elif "day_" in outreach_status:
             funnel["contacted"] += 1
-        elif status == "replied":
+        elif outreach_status == "replied":
             funnel["replied"] += 1
+        else:
+            funnel["discovered"] += 1
             
     # Add open/reply counts from log traces
     opened_logs = sum(1 for log in logs if log.get("status") == "opened")

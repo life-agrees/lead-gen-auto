@@ -164,6 +164,16 @@ def _get_best_signal(lead: dict) -> str:
 class LLMMessageGenerator:
     SUPPORTED_PROVIDERS = {"mock", "openai", "anthropic", "gemini", "grok", "groq"}
 
+    @property
+    def system_persona(self) -> str:
+        from utils.campaign import get_active_campaign
+        return get_active_campaign().get("system_persona") or SYSTEM_PERSONA
+
+    @property
+    def trovr_context(self) -> str:
+        from utils.campaign import get_active_campaign
+        return get_active_campaign().get("trovr_context") or TROVR_CONTEXT
+
     def __init__(self):
         self.provider = os.getenv("DEFAULT_LLM_PROVIDER", "mock").lower()
         self.openai_key = os.getenv("OPENAI_API_KEY")
@@ -239,7 +249,7 @@ class LLMMessageGenerator:
             return ""
 
         prompt = f"""\
-{TROVR_CONTEXT}
+{self.trovr_context}
 
 You're writing a cold DM on Twitter/X to this Web3 builder.
 Here is everything we know about them:
@@ -294,7 +304,7 @@ Return ONLY the message text. No quotes around it. No preamble."""
 
         if day == 3:
             prompt = f"""\
-{TROVR_CONTEXT}
+{self.trovr_context}
 
 Write a short follow-up DM to @{handle} (name: {name}).
 3 days ago we reached out about Trovr.ai — they haven't replied.
@@ -311,7 +321,7 @@ Guidelines:
 Return ONLY the message."""
         else:
             prompt = f"""\
-{TROVR_CONTEXT}
+{self.trovr_context}
 
 Write a short final DM to @{handle} (name: {name}).
 This is the last message in our outreach sequence — we're closing their slot.
@@ -366,7 +376,7 @@ Return ONLY the message."""
             completion = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "system", "content": self.system_persona},
                     {"role": "user",   "content": prompt}
                 ],
                 max_tokens=250,
@@ -385,7 +395,7 @@ Return ONLY the message."""
                 model="claude-3-5-sonnet-20241022",
                 max_tokens=250,
                 temperature=0.9,
-                system=SYSTEM_PERSONA,
+                system=self.system_persona,
                 messages=[{"role": "user", "content": prompt}]
             )
             return message.content[0].text.strip()
@@ -399,7 +409,7 @@ Return ONLY the message."""
             client = genai.Client(api_key=self.gemini_key)
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
-                contents=f"{SYSTEM_PERSONA}\n\n{prompt}",
+                contents=f"{self.system_persona}\n\n{prompt}",
             )
             return response.text.strip()
         except Exception as e:
@@ -416,7 +426,7 @@ Return ONLY the message."""
             completion = client.chat.completions.create(
                 model="grok-3",
                 messages=[
-                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "system", "content": self.system_persona},
                     {"role": "user",   "content": prompt}
                 ],
                 max_tokens=250,
@@ -436,7 +446,7 @@ Return ONLY the message."""
             completion = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": SYSTEM_PERSONA},
+                    {"role": "system", "content": self.system_persona},
                     {"role": "user",   "content": prompt}
                 ],
                 max_tokens=250,
@@ -505,7 +515,7 @@ Return ONLY the message."""
         elif stage == "day_3_followup":
             signal = _get_best_signal(lead)
             return (
-                f"Bumping this — noticed {signal} and thought this was worth a second look. "
+                f"Bumping this, {name} — noticed {signal} and thought this was worth a second look. "
                 f"Still happy to drop those 10 free Trovr.ai leads if now's a better time."
             )
 

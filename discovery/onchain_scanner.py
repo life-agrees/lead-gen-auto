@@ -23,6 +23,7 @@ from utils.constants import (
 )
 from utils.logger import get_logger
 from api.db.supabase_client import bulk_insert_leads, lead_exists
+from utils.campaign import get_active_campaign
 
 logger = get_logger(__name__)
 
@@ -129,8 +130,8 @@ def scan_contract_interactions(
 
     wallets    = set()
     latest     = w3.eth.block_number
-    # ~6500 blocks per day on Ethereum, ~43200 on Base (2s blocks)
-    blocks_per_day = 43200 if chain == "base" else 6500
+    # Base/Polygon have ~2s blocks (~43200 blocks/day), BSC has ~3s blocks (~28800 blocks/day), Ethereum ~12s (~6500 blocks/day)
+    blocks_per_day = 43200 if chain in ("base", "polygon") else (28800 if chain == "bsc" else 6500)
     from_block = max(0, latest - (blocks_per_day * lookback_days))
 
     logger.info(f"Scanning {chain} contract {contract_address[:10]}... "
@@ -280,11 +281,17 @@ class OnchainScanner:
     def scan_active_wallets(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Scans on-chain contracts and queries Dune. Falls back to mock leads on errors."""
         logger.info(f"OnchainScanner: Starting scan run (limit: {limit})")
+        
+        campaign = get_active_campaign()
+        watched_contracts = campaign.get("watched_contracts") or WATCHED_CONTRACTS
+        dune_queries = campaign.get("dune_queries") or DUNE_QUERIES
+        lookback_days = campaign.get("onchain_active_days") or ONCHAIN_ACTIVE_DAYS
+        
         leads = []
 
         # ── 1. Direct contract scans ──────────────────────────────
         try:
-            for chain, contracts in WATCHED_CONTRACTS.items():
+            for chain, contracts in watched_contracts.items():
                 if len(leads) >= limit:
                     break
                 if not RPC_URLS.get(chain):
@@ -294,7 +301,7 @@ class OnchainScanner:
                     if not contract or len(leads) >= limit:
                         continue
                     try:
-                        wallets = scan_contract_interactions(chain, contract)
+                        wallets = scan_contract_interactions(chain, contract, lookback_days=lookback_days)
                         for wallet in wallets:
                             lead = wallet_to_lead(wallet, chain, contract)
                             if lead:
@@ -307,7 +314,7 @@ class OnchainScanner:
 
         # ── 2. Dune queries ───────────────────────────────────────
         try:
-            for query_name, query_id in DUNE_QUERIES.items():
+            for query_name, query_id in dune_queries.items():
                 if len(leads) >= limit:
                     break
                 if not query_id:
@@ -339,7 +346,7 @@ class OnchainScanner:
             "0x15d34AAf54a67C68101F40973C6B0B6Cf5E4029E"
         ]
         ens_names = ["alice.eth", "bob.eth", "carol.eth", "dave.eth", "eve.eth", "frank.eth", "grace.eth", "heidi.eth"]
-        chains = ["ethereum", "base", "arbitrum", "polygon", "optimism"]
+        chains = ["ethereum", "base", "arbitrum", "polygon", "optimism", "bsc"]
 
         leads = []
         for i in range(min(limit, len(wallets))):

@@ -47,6 +47,7 @@ def check_watched_contract_interaction(
     w3: Web3,
     wallet: str,
     contract: str,
+    chain: str = "base",
     lookback_days: int = ONCHAIN_ACTIVE_DAYS
 ) -> bool:
     """
@@ -58,7 +59,7 @@ def check_watched_contract_interaction(
         checksum_wallet    = Web3.to_checksum_address(wallet)
         checksum_contract  = Web3.to_checksum_address(contract)
         latest             = w3.eth.block_number
-        blocks_per_day     = 43200  # Base/Polygon ~2s blocks
+        blocks_per_day     = 43200 if chain in ("base", "polygon") else (28800 if chain == "bsc" else 6500)
         from_block         = max(0, latest - (blocks_per_day * lookback_days))
         CHUNK_SIZE         = 1_500
 
@@ -121,7 +122,7 @@ def enrich_onchain(wallet: str) -> dict:
         for contract in contracts:
             if not contract:
                 continue
-            hit = check_watched_contract_interaction(w3, wallet, contract)
+            hit = check_watched_contract_interaction(w3, wallet, contract, chain=chain)
             if hit:
                 result["watched_contract_hit"] = True
                 logger.info(
@@ -146,7 +147,7 @@ def enrich_onchain(wallet: str) -> dict:
 
 def _generate_mock_onchain_data(wallet: str) -> dict:
     import random
-    chains = ["ethereum", "base", "polygon", "arbitrum", "optimism"]
+    chains = ["ethereum", "base", "polygon", "arbitrum", "optimism", "bsc"]
     random.shuffle(chains)
     active_chains = chains[:random.randint(1, 3)]
     

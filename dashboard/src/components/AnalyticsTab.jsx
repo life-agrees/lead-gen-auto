@@ -7,12 +7,14 @@ import {
 
 const COLORS = {
   hot: '#00f0ff',
-  warm: '#9d4edd',
-  cold: '#475569',
+  warm: '#d946ef',
+  cold: '#4f46e5',
   twitter: '#1da1f2',
-  github: '#f0f6fc',
+  github: '#10b981',
   onchain: '#00f0ff',
   discord: '#5865f2',
+  dexscreener: '#fb923c',
+  dune: '#e6d5c3',
   unknown: '#64748b',
 };
 
@@ -72,9 +74,9 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
 
   // --- Tier pie data ---
   const tierData = [
-    { name: 'HOT (≥70)', value: pipelineStats.tiers.hot, color: COLORS.hot },
-    { name: 'WARM (40–69)', value: pipelineStats.tiers.warm, color: COLORS.warm },
-    { name: 'COLD (<40)', value: pipelineStats.tiers.cold, color: COLORS.cold },
+    { name: 'HOT (≥70)', value: pipelineStats.tiers.hot, color: COLORS.hot, fill: 'url(#hotTierGrad)' },
+    { name: 'WARM (40–69)', value: pipelineStats.tiers.warm, color: COLORS.warm, fill: 'url(#warmTierGrad)' },
+    { name: 'COLD (<40)', value: pipelineStats.tiers.cold, color: COLORS.cold, fill: 'url(#coldTierGrad)' },
   ].filter(d => d.value > 0);
 
   // --- Source pie data ---
@@ -82,6 +84,7 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
     name: key.toUpperCase(),
     value: val,
     color: COLORS[key] || COLORS.unknown,
+    fill: `url(#${key}Grad)`,
   }));
 
   // --- Pipeline funnel bar data ---
@@ -120,6 +123,20 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
+                <defs>
+                  <linearGradient id="hotTierGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#00f0ff" />
+                    <stop offset="100%" stopColor="#0072ff" />
+                  </linearGradient>
+                  <linearGradient id="warmTierGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#d946ef" />
+                    <stop offset="100%" stopColor="#701a75" />
+                  </linearGradient>
+                  <linearGradient id="coldTierGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4f46e5" />
+                    <stop offset="100%" stopColor="#1e1b4b" />
+                  </linearGradient>
+                </defs>
                 <Pie
                   data={tierData}
                   cx="50%"
@@ -130,7 +147,7 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
                   dataKey="value"
                 >
                   {tierData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
+                    <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -156,21 +173,58 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
+                <defs>
+                  <linearGradient id="twitterGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#1da1f2" />
+                    <stop offset="100%" stopColor="#0d5885" />
+                  </linearGradient>
+                  <linearGradient id="githubGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#047857" />
+                  </linearGradient>
+                  <linearGradient id="onchainGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#00f0ff" />
+                    <stop offset="100%" stopColor="#0088cc" />
+                  </linearGradient>
+                  <linearGradient id="discordGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#5865f2" />
+                    <stop offset="100%" stopColor="#2c3893" />
+                  </linearGradient>
+                  <linearGradient id="dexscreenerGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#fb923c" />
+                    <stop offset="100%" stopColor="#b45309" />
+                  </linearGradient>
+                  <linearGradient id="duneGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#f5ebe0" />
+                    <stop offset="100%" stopColor="#c5baaf" />
+                  </linearGradient>
+                  <linearGradient id="unknownGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#94a3b8" />
+                    <stop offset="100%" stopColor="#475569" />
+                  </linearGradient>
+                </defs>
                 <Pie
                   data={sourceData}
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
+                  outerRadius={65}
                   paddingAngle={3}
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
-                  labelLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                  label={({ name, value, percent }) => `${name.length > 7 ? name.slice(0,7) : name}: ${value}`}
+                  labelLine={{ stroke: 'rgba(255,255,255,0.18)', strokeWidth: 1 }}
                 >
                   {sourceData.map((entry, index) => (
-                    <Cell key={`src-${index}`} fill={entry.color} stroke="transparent" />
+                    <Cell key={`src-${index}`} fill={entry.fill} stroke="transparent" />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  formatter={(value) => (
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+                      {value}
+                    </span>
+                  )}
+                />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -198,15 +252,19 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="count" fill="url(#cyanGrad)" radius={[4, 4, 0, 0]}>
-                <defs>
-                  <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00f0ff" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#00f0ff" stopOpacity={0.2} />
-                  </linearGradient>
-                </defs>
-              </Bar>
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,240,255,0.04)' }} />
+              <defs>
+                <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={1.0} />
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                </linearGradient>
+              </defs>
+              <Bar
+                dataKey="count"
+                fill="url(#cyanGrad)"
+                radius={[4, 4, 0, 0]}
+                activeBar={{ fill: 'url(#cyanGrad)', stroke: '#00f0ff', strokeWidth: 1.5 }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -224,8 +282,8 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
               <AreaChart data={dailyData}>
                 <defs>
                   <linearGradient id="purpleGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#9d4edd" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#9d4edd" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -279,15 +337,29 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
                 tickLine={false}
                 allowDecimals={false}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
               <Legend
                 formatter={(value) => (
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{value}</span>
                 )}
               />
-              <Bar dataKey="Sent" fill="rgba(0, 240, 255, 0.5)" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Opened" fill="rgba(157, 78, 221, 0.6)" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Replied" fill="rgba(52, 211, 153, 0.7)" radius={[3, 3, 0, 0]} />
+              <defs>
+                <linearGradient id="sentGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.95} />
+                  <stop offset="100%" stopColor="#0369a1" stopOpacity={0.5} />
+                </linearGradient>
+                <linearGradient id="openedGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#c084fc" stopOpacity={0.95} />
+                  <stop offset="100%" stopColor="#7e22ce" stopOpacity={0.5} />
+                </linearGradient>
+                <linearGradient id="repliedGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity={0.95} />
+                  <stop offset="100%" stopColor="#065f46" stopOpacity={0.5} />
+                </linearGradient>
+              </defs>
+              <Bar dataKey="Sent" fill="url(#sentGrad)" radius={[3, 3, 0, 0]} activeBar={{ fill: 'url(#sentGrad)', stroke: '#38bdf8', strokeWidth: 1.5 }} />
+              <Bar dataKey="Opened" fill="url(#openedGrad)" radius={[3, 3, 0, 0]} activeBar={{ fill: 'url(#openedGrad)', stroke: '#c084fc', strokeWidth: 1.5 }} />
+              <Bar dataKey="Replied" fill="url(#repliedGrad)" radius={[3, 3, 0, 0]} activeBar={{ fill: 'url(#repliedGrad)', stroke: '#34d399', strokeWidth: 1.5 }} />
             </BarChart>
           </ResponsiveContainer>
         )}

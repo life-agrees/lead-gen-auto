@@ -79,15 +79,16 @@ def get_leads_stats() -> Dict[str, Any]:
         "replied": 0,
     }
     for lead in leads:
-        status = lead.get("outreach_status", "discovered").lower()
-        if status in ("discovered",):
-            stage_counts["discovered"] += 1
-        elif status == "scored":
+        outreach_status = (lead.get("outreach_status") or "discovered").lower()
+        lead_status     = (lead.get("status") or "raw").lower()
+        if outreach_status == "scored" or lead_status == "scored":
             stage_counts["scored"] += 1
-        elif "day_" in status:
+        elif "day_" in outreach_status:
             stage_counts["contacted"] += 1
-        elif status == "replied":
+        elif outreach_status == "replied":
             stage_counts["replied"] += 1
+        else:
+            stage_counts["discovered"] += 1
 
     # Source distribution
     sources: Dict[str, int] = {}
@@ -105,7 +106,25 @@ def get_leads_stats() -> Dict[str, Any]:
 @router.get("/", response_model=List[LeadBase])
 def read_leads(min_score: float = Query(0.0, description="Minimum lead fit score to filter by")):
     """Retrieves all leads from the database, sorted by score."""
+    import json as _json
     leads = db.get_leads(min_score)
+    # Coerce any JSON-string fields back to native Python types
+    for lead in leads:
+        for field in ("raw_data", "score_breakdown"):
+            if isinstance(lead.get(field), str):
+                try:
+                    lead[field] = _json.loads(lead[field])
+                except Exception:
+                    lead[field] = {}
+        if isinstance(lead.get("chains_active"), str):
+            try:
+                lead["chains_active"] = _json.loads(lead["chains_active"])
+            except Exception:
+                lead["chains_active"] = []
+        # Ensure required string fields are never None
+        lead.setdefault("username", lead.get("twitter_handle") or lead.get("wallet_address") or "unknown")
+        lead.setdefault("name", lead.get("username") or "unknown")
+        lead.setdefault("source", "unknown")
     return leads
 
 @router.get("/{lead_id}", response_model=LeadBase)

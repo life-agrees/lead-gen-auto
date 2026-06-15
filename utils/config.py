@@ -26,6 +26,7 @@ RPC_URLS = {
     "arbitrum": os.getenv("RPC_ARBITRUM") or (f"https://arb-mainnet.g.alchemy.com/v2/{ALCHEMY_API_KEY}" if ALCHEMY_API_KEY else None),
     "polygon":  os.getenv("RPC_POLYGON")  or (f"https://polygon-mainnet.g.alchemy.com/v2/{ALCHEMY_API_KEY}" if ALCHEMY_API_KEY else None),
     "optimism": os.getenv("RPC_OPTIMISM") or (f"https://opt-mainnet.g.alchemy.com/v2/{ALCHEMY_API_KEY}" if ALCHEMY_API_KEY else None),
+    "bsc":      os.getenv("RPC_BSC")      or (f"https://bsc-mainnet.g.alchemy.com/v2/{ALCHEMY_API_KEY}" if ALCHEMY_API_KEY else None),
 }
 
 # LLM Providers
