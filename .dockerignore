@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# Python virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Python cache & tests
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.pytest/
+
+# Frontend dependencies and builds
+dashboard/node_modules/
+dashboard/dist/
+
+# Local SQLite databases & config secrets
+data/
+*.db
+.env
+.gemini/
+mcp/
+walkthrough.md
+task.md
+implementation_plan.md
