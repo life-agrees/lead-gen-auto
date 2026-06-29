@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://YOUR_NORTHFLANK_BACKEND_URL/api/:path*"
+      "destination": "https://p01--lead-gen--yg8hh58rzsgq.code.run/"
     }
   ]
 }
