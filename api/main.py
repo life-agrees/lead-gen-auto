@@ -5,6 +5,7 @@ from api.db.supabase_client import DatabaseClient
 from utils.logger import get_logger
 from datetime import datetime, timezone
 import json
+import os
 
 logger = get_logger("APIServer")
 
@@ -14,11 +15,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend local development
+# Enable CORS dynamically based on CORS_ORIGINS env variable
+cors_origins_str = os.getenv("CORS_ORIGINS", "*")
+if cors_origins_str == "*":
+    allow_origins = ["*"]
+    allow_credentials = False
+else:
+    allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+    allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to react dev domain
-    allow_credentials=True,
+    allow_origins=allow_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

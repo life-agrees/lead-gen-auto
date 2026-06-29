@@ -7,8 +7,8 @@ import AnalyticsTab from './components/AnalyticsTab';
 import Preloader from './components/Preloader';
 import LandingPage from './components/LandingPage';
 
-// Relative path — Vite proxy forwards /api/* to FastAPI on :8000 (no CORS)
-const API_BASE = '/api';
+// Dynamic API base — defaults to '/api' for Vite dev proxy, can be overridden via env vars in production
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const NAV_TABS = [
   { id: 'dashboard', icon: '📊', label: 'PIPELINE SUMMARY' },
