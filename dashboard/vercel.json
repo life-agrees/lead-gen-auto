@@ -1,10 +1,4 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://p01--lead-gen--yg8hh58rzsgq.code.run/api/:path*"
-    }
-  ]
+  "trailingSlash": false
 }
