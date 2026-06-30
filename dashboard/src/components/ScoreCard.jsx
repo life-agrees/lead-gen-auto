@@ -57,11 +57,21 @@ export default function ScoreCard({ lead, onClose }) {
   const breakdown = lead.score_breakdown || {};
   const raw = lead.raw_data || {};
 
+  const twitterPoints = (breakdown.twitter_followers_1k || 0) + (breakdown.twitter_followers_5k || 0) + (breakdown.tweeted_keyword_last_30d || 0);
+  const githubPoints = (breakdown.has_github || 0) + (breakdown.github_has_solidity || 0);
+  const onchainPoints = (breakdown.onchain_active_last_30d || 0) + (breakdown.has_ens || 0) + (breakdown.multiple_chains_active || 0);
+  const bioPoints = (breakdown.bio_keyword_match || 0);
+
+  const twitterScore = Math.round((twitterPoints / 50) * 100);
+  const githubScore = Math.round((githubPoints / 25) * 100);
+  const onchainScore = Math.round((onchainPoints / 50) * 100);
+  const bioScore = Math.round((bioPoints / 15) * 100);
+
   const scoreStats = [
-    { label: 'X INFLUENCE', val: breakdown.twitter_influence || 0, color: 'var(--accent-cyan)' },
-    { label: 'GITHUB VELOCITY', val: breakdown.github_activity || 0, color: 'var(--accent-purple)' },
-    { label: 'ON-CHAIN DEPTH', val: breakdown.onchain_relevance || 0, color: '#34d399' },
-    { label: 'ICP BIO MATCH', val: breakdown.bio_relevance || 0, color: '#fb7185' },
+    { label: 'X INFLUENCE', val: breakdown.twitter_influence !== undefined ? breakdown.twitter_influence : twitterScore, color: 'var(--accent-cyan)' },
+    { label: 'GITHUB VELOCITY', val: breakdown.github_activity !== undefined ? breakdown.github_activity : githubScore, color: 'var(--accent-purple)' },
+    { label: 'ON-CHAIN DEPTH', val: breakdown.onchain_relevance !== undefined ? breakdown.onchain_relevance : onchainScore, color: '#34d399' },
+    { label: 'ICP BIO MATCH', val: breakdown.bio_relevance !== undefined ? breakdown.bio_relevance : bioScore, color: '#fb7185' },
   ];
 
   // Enriched signals
