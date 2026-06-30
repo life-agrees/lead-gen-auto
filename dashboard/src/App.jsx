@@ -363,12 +363,7 @@ export default function App() {
         {activeTab === 'analytics' ? (
           <AnalyticsTab pipelineStats={pipelineStats} pipelineReport={pipelineReport} />
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: showRightPanel ? '1.7fr 1fr' : '1fr',
-            gap: '20px',
-            flex: '1',
-          }}>
+          <div className={`cyber-grid ${showRightPanel ? 'grid-split' : 'grid-full'}`} style={{ gap: '20px', flex: '1' }}>
             {/* Left panel */}
             {(activeTab === 'dashboard' || activeTab === 'telemetry') && (
               <LeadTable

@@ -69,7 +69,9 @@ body {
   flex-direction: column;
   gap: 30px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 240, 255, 0.03);
-  position: relative;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
 }
 
 .cyber-sidebar::before {
@@ -806,3 +808,30 @@ body {
 .footer-pipeline-tag { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; color: var(--accent-cyan); }
 .footer-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); animation: lp-live-blink 1.4s ease-in-out infinite; }
 .footer-built { font-size: 0.78rem; color: var(--text-secondary); }
+
+/* Responsive Dashboard Layout Grid */
+.cyber-grid {
+  display: grid;
+}
+.grid-split {
+  grid-template-columns: 1.7fr 1fr;
+}
+.grid-full {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 1200px) {
+  .grid-split {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .cyber-hud-container {
+    flex-direction: column;
+  }
+  .cyber-sidebar {
+    width: 100%;
+    position: relative;
+    max-height: none;
+    top: 0;
+  }
+}

@@ -87,8 +87,12 @@ export default function ScoreCard({ lead, onClose }) {
 
   return (
     <div className="cyber-card card-corner-decor" style={{
-      height: '100%', display: 'flex', flexDirection: 'column', gap: '16px',
+      display: 'flex', flexDirection: 'column', gap: '16px',
       overflow: 'hidden',
+      position: 'sticky',
+      top: '20px',
+      maxHeight: 'calc(100vh - 40px)',
+      alignSelf: 'start',
     }}>
 
       {/* Header */}
