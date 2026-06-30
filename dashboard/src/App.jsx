@@ -20,6 +20,14 @@ const NAV_TABS = [
 export default function App() {
   const [showPreloader, setShowPreloader] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('trovr-theme') || 'midnight');
+
+  // Persist theme choice
+  useEffect(() => {
+    localStorage.setItem('trovr-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'midnight' ? 'eclipse' : 'midnight');
   const [showLanding, setShowLanding] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [leads, setLeads] = useState([]);
@@ -156,6 +164,7 @@ export default function App() {
 
   return (
     <div
+      data-theme={theme}
       className="cyber-hud-container"
       style={{
         display: 'grid',
@@ -344,7 +353,27 @@ export default function App() {
             {sidebarCollapsed ? '🔄' : '🔄 REFRESH DATA'}
           </button>
 
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="theme-toggle-btn"
+            title={`Switch to ${theme === 'midnight' ? 'Eclipse (Emerald)' : 'Midnight (Indigo)'} theme`}
+            style={{ justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}
+          >
+            <div className="theme-toggle-swatch" style={{
+              background: theme === 'midnight'
+                ? 'linear-gradient(90deg, #34d399, #22d3ee)'  /* preview eclipse */
+                : 'linear-gradient(90deg, #818cf8, #a78bfa)', /* preview midnight */
+            }} />
+            {!sidebarCollapsed && (
+              <span style={{ fontSize: '0.68rem', letterSpacing: '0.8px' }}>
+                {theme === 'midnight' ? 'ECLIPSE MODE' : 'MIDNIGHT MODE'}
+              </span>
+            )}
+          </button>
+
           {!sidebarCollapsed && (
+
             <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', lineHeight: '1.6' }}>
               DATABASE:{' '}
               <span style={{ color: systemStatus?.db_mode === 'supabase' ? '#34d399' : 'var(--accent-cyan)' }}>
