@@ -7,8 +7,8 @@ import AnalyticsTab from './components/AnalyticsTab';
 import Preloader from './components/Preloader';
 import LandingPage from './components/LandingPage';
 
-// Dynamic API base — defaults to '/api' for Vite dev proxy, can be overridden via env vars in production
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+// Production API base points directly to Northflank, local dev uses Vite proxy
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://p01--lead-gen--yg8hh58rzsgq.code.run/api';
 
 const NAV_TABS = [
   { id: 'dashboard', icon: '📊', label: 'PIPELINE SUMMARY' },

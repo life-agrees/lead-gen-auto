@@ -15,19 +15,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS dynamically based on CORS_ORIGINS env variable
-cors_origins_str = os.getenv("CORS_ORIGINS", "*")
-if cors_origins_str == "*":
-    allow_origins = ["*"]
-    allow_credentials = False
-else:
+# Enable CORS for local development and production Vercel deployment
+cors_origins_str = os.getenv("CORS_ORIGINS", "")
+if cors_origins_str:
     allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
-    allow_credentials = True
+else:
+    allow_origins = [
+        "http://localhost:5173",
+        "https://lead-gen-auto.vercel.app",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,
-    allow_credentials=allow_credentials,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
