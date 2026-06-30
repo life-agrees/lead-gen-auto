@@ -88,11 +88,11 @@ export default function ScoreCard({ lead, onClose }) {
   return (
     <div className="cyber-card card-corner-decor" style={{
       display: 'flex', flexDirection: 'column', gap: '16px',
-      overflow: 'hidden',
       position: 'sticky',
       top: '20px',
-      maxHeight: 'calc(100vh - 40px)',
+      height: 'calc(100vh - 40px)',
       alignSelf: 'start',
+      overflow: 'hidden',
     }}>
 
       {/* Header */}
@@ -177,7 +177,7 @@ export default function ScoreCard({ lead, onClose }) {
       </div>
 
       {/* Tab content — scrollable */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingRight: '4px' }}>
 
         {activeSection === 'overview' && (
           <>
