@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 
-const getTierClass = (score) => {
-  if (score >= 70) return 'score-badge score-high';
-  if (score >= 40) return 'score-badge score-medium';
-  return 'score-badge score-low';
+// Inline score colors — immune to CSS purge in production builds
+const getScoreStyle = (score) => {
+  if (score >= 70) return { color: '#00f0ff', border: '1px solid rgba(0,240,255,0.4)', background: 'rgba(0,240,255,0.08)', fontFamily: 'var(--font-mono)', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', fontSize: '0.82rem' };
+  if (score >= 40) return { color: '#b388ff', border: '1px solid rgba(179,136,255,0.4)', background: 'rgba(179,136,255,0.08)', fontFamily: 'var(--font-mono)', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', fontSize: '0.82rem' };
+  return { color: '#64748b', border: '1px solid rgba(100,116,139,0.3)', background: 'rgba(100,116,139,0.06)', fontFamily: 'var(--font-mono)', fontWeight: 'bold', padding: '2px 8px', borderRadius: '6px', fontSize: '0.82rem' };
+};
+
+// Inline source badge colors — immune to CSS purge in production builds
+const getSourceStyle = (source) => {
+  const s = (source || '').toLowerCase();
+  const base = { fontFamily: 'var(--font-hud)', fontSize: '0.65rem', fontWeight: '700', letterSpacing: '0.8px', padding: '2px 8px', borderRadius: '4px', border: '1px solid' };
+  if (s === 'twitter') return { ...base, color: '#1d9bf0', borderColor: 'rgba(29,155,240,0.4)', background: 'rgba(29,155,240,0.08)' };
+  if (s === 'github') return { ...base, color: '#9d4edd', borderColor: 'rgba(157,78,221,0.4)', background: 'rgba(157,78,221,0.08)' };
+  if (s === 'onchain') return { ...base, color: '#34d399', borderColor: 'rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.08)' };
+  return { ...base, color: '#94a3b8', borderColor: 'rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.06)' };
 };
 
 const getTierLabel = (score) => {
@@ -169,14 +180,14 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
 
                 {/* Source */}
                 <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
-                  <span className={`source-tag tag-${(lead.source || 'unknown').toLowerCase()}`}>
-                    {lead.source}
+                  <span style={getSourceStyle(lead.source)}>
+                    {(lead.source || '').toUpperCase()}
                   </span>
                 </td>
 
                 {/* Score */}
                 <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
-                  <span className={getTierClass(lead.score)}>{lead.score}%</span>
+                  <span style={getScoreStyle(lead.score)}>{lead.score}%</span>
                 </td>
 
                 {/* Tier */}

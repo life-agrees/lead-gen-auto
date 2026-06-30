@@ -117,8 +117,16 @@ export default function ScoreCard({ lead, onClose }) {
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
             @{lead.username || lead.twitter_handle}
             {lead.source && (
-              <span className={`source-tag tag-${lead.source}`} style={{ marginLeft: '8px' }}>
-                {lead.source}
+              <span style={{
+                marginLeft: '8px',
+                fontFamily: 'var(--font-hud)', fontSize: '0.62rem', fontWeight: '700',
+                letterSpacing: '0.8px', padding: '1px 6px', borderRadius: '4px', border: '1px solid',
+                ...(lead.source.toLowerCase() === 'twitter' ? { color: '#1d9bf0', borderColor: 'rgba(29,155,240,0.4)', background: 'rgba(29,155,240,0.08)' }
+                  : lead.source.toLowerCase() === 'github' ? { color: '#9d4edd', borderColor: 'rgba(157,78,221,0.4)', background: 'rgba(157,78,221,0.08)' }
+                  : lead.source.toLowerCase() === 'onchain' ? { color: '#34d399', borderColor: 'rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.08)' }
+                  : { color: '#94a3b8', borderColor: 'rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.06)' })
+              }}>
+                {lead.source.toUpperCase()}
               </span>
             )}
           </div>
