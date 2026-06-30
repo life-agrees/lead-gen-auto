@@ -367,7 +367,7 @@ export default function App() {
             className="cyber-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: showRightPanel ? 'minmax(0, 1.7fr) 380px' : '1fr',
+              gridTemplateColumns: showRightPanel ? 'minmax(0, 1fr) minmax(280px, 380px)' : 'minmax(0, 1fr)',
               gap: '20px',
               flex: 1,
             }}

@@ -129,7 +129,7 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
 
       {/* Table */}
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '720px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '580px' }}>
           <thead>
             <tr style={{
               borderBottom: '1px solid rgba(0, 240, 255, 0.15)',
@@ -138,17 +138,16 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
               fontSize: '0.72rem',
               letterSpacing: '0.5px',
             }}>
-              <th style={{ padding: '12px 10px' }}>LEAD SUMMARY</th>
-              <th style={{ padding: '12px 10px' }}>SOURCE</th>
+              <th style={{ padding: '10px 8px' }}>LEAD SUMMARY</th>
+              <th style={{ padding: '10px 8px' }}>SOURCE</th>
               <th
-                style={{ padding: '12px 10px', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                style={{ padding: '10px 8px', cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
                 onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
               >
                 FIT SCORE {sortDir === 'desc' ? '▼' : '▲'}
               </th>
-              <th style={{ padding: '12px 10px' }}>TIER</th>
-              <th style={{ padding: '12px 10px' }}>CAMPAIGN STAGE</th>
-              <th style={{ padding: '12px 10px', textAlign: 'right' }}>ACTIONS</th>
+              <th style={{ padding: '10px 8px' }}>CAMPAIGN STAGE</th>
+              <th style={{ padding: '10px 8px', textAlign: 'right' }}>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -165,50 +164,48 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
               >
                 {/* Lead info */}
-                <td style={{ padding: '14px 10px' }}>
-                  <div style={{ fontWeight: '600', color: '#fff', fontSize: '0.88rem' }}>{lead.name}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
+                <td style={{ padding: '12px 8px' }}>
+                  <div style={{ fontWeight: '600', color: '#fff', fontSize: '0.86rem' }}>{lead.name}</div>
+                  <div style={{ fontSize: '0.70rem', color: 'var(--text-secondary)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>
                     @{lead.username}
                   </div>
                   <div style={{
-                    fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px',
-                    maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    fontSize: '0.70rem', color: 'var(--text-secondary)', marginTop: '3px',
+                    maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>
                     {lead.bio}
                   </div>
                 </td>
 
                 {/* Source */}
-                <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
+                <td style={{ padding: '12px 8px', verticalAlign: 'middle' }}>
                   <span style={getSourceStyle(lead.source)}>
                     {(lead.source || '').toUpperCase()}
                   </span>
                 </td>
 
-                {/* Score */}
-                <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
-                  <span style={getScoreStyle(lead.score)}>{lead.score}%</span>
-                </td>
-
-                {/* Tier */}
-                <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '0.7rem', fontWeight: 'bold',
-                    color: lead.score >= 70 ? 'var(--accent-cyan)' : lead.score >= 40 ? '#b388ff' : '#64748b',
-                  }}>
-                    {getTierLabel(lead.score)}
-                  </span>
+                {/* Score + Tier combined — saves one full column */}
+                <td style={{ padding: '12px 8px', verticalAlign: 'middle' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={getScoreStyle(lead.score)}>{lead.score}%</span>
+                    <span style={{
+                      fontFamily: 'var(--font-mono)', fontSize: '0.62rem', fontWeight: 'bold',
+                      color: lead.score >= 70 ? 'var(--accent-cyan)' : lead.score >= 40 ? '#b388ff' : '#64748b',
+                    }}>
+                      {getTierLabel(lead.score)}
+                    </span>
+                  </div>
                 </td>
 
                 {/* Status */}
-                <td style={{ padding: '14px 10px', verticalAlign: 'middle' }}>
+                <td style={{ padding: '12px 8px', verticalAlign: 'middle' }}>
                   <span className={`status-pill ${statusToDisplayClass(lead.outreach_status)}`}>
                     {(lead.outreach_status || 'discovered').replace(/_/g, ' ')}
                   </span>
                 </td>
 
                 {/* Actions */}
-                <td style={{ padding: '14px 10px', textAlign: 'right', verticalAlign: 'middle' }} onClick={e => e.stopPropagation()}>
+                <td style={{ padding: '12px 8px', textAlign: 'right', verticalAlign: 'middle' }} onClick={e => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                     <button
                       className="cyber-btn"
@@ -235,7 +232,7 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
 
             {filteredLeads.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
                   NO LEADS MATCH THE SELECTED FILTERS
                 </td>
               </tr>
