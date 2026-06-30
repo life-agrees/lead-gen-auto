@@ -22,7 +22,7 @@ if cors_origins_str:
 else:
     allow_origins = [
         "http://localhost:5173",
-        "https://lead-gen-auto.vercel.app",
+        "https://trovr-ai.vercel.app",
     ]
 
 app.add_middleware(
