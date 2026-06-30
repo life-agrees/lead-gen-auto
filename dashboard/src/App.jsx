@@ -41,7 +41,7 @@ export default function App() {
         fetch(`${API_BASE}/reports/summary`),
         fetch(`${API_BASE}/leads/stats`),
         fetch(`${API_BASE}/reports/pipeline-report`),
-        fetch(`/api/status`),
+        fetch(`${API_BASE}/status`),
       ]);
 
       const leadsData      = await leadsRes.json();
