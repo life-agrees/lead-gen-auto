@@ -23,7 +23,6 @@ else:
     allow_origins = [
         "http://localhost:5173",
         "https://trovr-ai.vercel.app",
-        "https://lead-gen-auto.vercel.app",
         "https://trovr.ai",
         "https://www.trovr.ai",
     ]
