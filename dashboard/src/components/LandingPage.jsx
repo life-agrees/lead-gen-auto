@@ -171,6 +171,19 @@ function FAQItem({ q, a }) {
 export default function LandingPage({ onEnterDashboard, onClientLogin }) {
   const [activeStep, setActiveStep] = useState(0);
   const [liveStats, setLiveStats] = useState(FALLBACK_STATS);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [accessCode, setAccessCode] = useState('');
+  const [loginError, setLoginError] = useState(false);
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    if (accessCode === 'trovr2026') {
+      onClientLogin();
+    } else {
+      setLoginError(true);
+      setTimeout(() => setLoginError(false), 500);
+    }
+  };
 
   // Animate pipeline steps
   useEffect(() => {
@@ -231,7 +244,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
 
             {/* Client login — subtle, right side */}
             <button
-              onClick={onClientLogin}
+              onClick={() => setShowLoginModal(true)}
               style={{
                 background: 'none',
                 border: '1px solid rgba(255,255,255,0.12)',
@@ -630,6 +643,143 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
 
       {/* ── FOOTER ── */}
       <Footer />
+
+      {/* ── CLIENT LOGIN MODAL ── */}
+      {showLoginModal && (
+        <div 
+          className="lp-fade-in"
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(6, 8, 17, 0.88)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+          onClick={() => {
+            setShowLoginModal(false);
+            setAccessCode('');
+            setLoginError(false);
+          }}
+        >
+          <form 
+            onSubmit={handleLoginSubmit}
+            onClick={e => e.stopPropagation()}
+            className={loginError ? 'shake' : ''}
+            style={{
+              background: 'var(--panel-bg, #0f1326)',
+              border: '1px solid var(--panel-border, rgba(255,255,255,0.08))',
+              borderRadius: '16px',
+              padding: '36px',
+              width: '90%',
+              maxWidth: '380px',
+              boxShadow: '0 24px 60px rgba(0,0,0,0.85), 0 0 30px rgba(29, 155, 240, 0.1)',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            {/* Top neon glow line */}
+            <div style={{
+              position: 'absolute',
+              top: -1, left: '10%', right: '10%', height: '1px',
+              background: 'linear-gradient(90deg, transparent, var(--accent-cyan, #00f0ff), transparent)'
+            }} />
+            
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: 800, fontFamily: 'var(--font-hud)', marginBottom: '8px', letterSpacing: '1px' }}>
+                CLIENT PORTAL
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', margin: 0 }}>
+                Enter access code to enter pipeline HUD
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={accessCode}
+                onChange={e => setAccessCode(e.target.value)}
+                autoFocus
+                style={{
+                  background: 'rgba(0,0,0,0.2)',
+                  border: loginError ? '1px solid #ff5f56' : '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  padding: '12px 14px',
+                  fontSize: '0.95rem',
+                  fontFamily: 'var(--font-mono)',
+                  textAlign: 'center',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                }}
+              />
+              {loginError && (
+                <span style={{ color: '#ff5f56', fontSize: '0.72rem', textAlign: 'center', fontFamily: 'var(--font-mono)' }}>
+                  ACCESS DENIED: INVALID CODE
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setAccessCode('');
+                  setLoginError(false);
+                }}
+                style={{
+                  flex: 1,
+                  background: 'none',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px',
+                  color: 'var(--text-secondary)',
+                  padding: '12px',
+                  fontSize: '0.8rem',
+                  fontFamily: 'var(--font-mono)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                style={{
+                  flex: 1,
+                  background: 'var(--accent-primary)',
+                  border: '1px solid var(--accent-primary)',
+                  borderRadius: '6px',
+                  color: 'var(--bg-dark, #0b0e1a)',
+                  padding: '12px',
+                  fontSize: '0.8rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.boxShadow = '0 0 15px var(--accent-primary)';
+                  e.currentTarget.style.filter = 'brightness(1.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.filter = 'none';
+                }}
+              >
+                Access HUD →
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

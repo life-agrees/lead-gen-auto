@@ -1030,3 +1030,20 @@ body {
   background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
   flex-shrink: 0;
 }
+
+/* Shake and fade-in animations for Client Login Modal */
+@keyframes lp-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.shake {
+  animation: lp-shake 0.3s ease;
+}
+@keyframes lp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lp-fade-in {
+  animation: lp-fade-in 0.2s ease both;
+}
