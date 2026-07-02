@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
 export default function OutreachLog({ logs, onSimulateStatus }) {
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting]   = useState(false);
   const [exportFilter, setExportFilter] = useState('all');
+  const [syncToast, setSyncToast]   = useState(null);
 
   const getStatusClass = (status) => {
     const s = (status || 'sent').toLowerCase();
@@ -21,6 +22,7 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
 
   const handleExport = async () => {
     setExporting(true);
+    setSyncToast(null);
     try {
       const params = exportFilter !== 'all' ? `?status=${exportFilter}` : '';
       const res = await fetch(`/api/outreach/export${params}`);
@@ -29,11 +31,15 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'trovr_outreach_export.csv';
+      a.download = 'trovr_leads_monday_delivery.csv';
       a.click();
       URL.revokeObjectURL(url);
+      setSyncToast('success');
+      setTimeout(() => setSyncToast(null), 4000);
     } catch (err) {
       console.error('Export error:', err);
+      setSyncToast('error');
+      setTimeout(() => setSyncToast(null), 4000);
     } finally {
       setExporting(false);
     }
@@ -73,9 +79,9 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
             <option value="replied">REPLIED ONLY</option>
           </select>
 
-          {/* Download button */}
+          {/* Sync to Google Sheet button */}
           <button
-            id="btn-export-outreach-csv"
+            id="btn-sync-google-sheet"
             onClick={handleExport}
             disabled={exporting}
             style={{
@@ -83,42 +89,64 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
               alignItems: 'center',
               gap: '7px',
               background: exporting
-                ? 'rgba(0,240,255,0.05)'
-                : 'linear-gradient(135deg, rgba(0,240,255,0.12), rgba(139,92,246,0.12))',
-              border: '1px solid rgba(0,240,255,0.3)',
+                ? 'rgba(52,211,153,0.05)'
+                : 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(34,197,94,0.08))',
+              border: `1px solid ${exporting ? 'rgba(52,211,153,0.2)' : 'rgba(52,211,153,0.45)'}`,
               borderRadius: '7px',
-              color: exporting ? 'var(--text-secondary)' : 'var(--accent-cyan)',
+              color: exporting ? 'var(--text-secondary)' : '#34d399',
               fontFamily: 'var(--font-hud)',
               fontSize: '0.7rem',
               letterSpacing: '0.8px',
               padding: '6px 14px',
               cursor: exporting ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: exporting ? 'none' : '0 0 10px rgba(0,240,255,0.08)',
+              boxShadow: exporting ? 'none' : '0 0 12px rgba(52,211,153,0.15)',
               whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { if (!exporting) e.currentTarget.style.boxShadow = '0 0 18px rgba(0,240,255,0.28)'; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = exporting ? 'none' : '0 0 10px rgba(0,240,255,0.08)'; }}
+            onMouseEnter={e => { if (!exporting) e.currentTarget.style.boxShadow = '0 0 22px rgba(52,211,153,0.35)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = exporting ? 'none' : '0 0 12px rgba(52,211,153,0.15)'; }}
           >
             {exporting ? (
               <>
-                <div className="glow-indicator" style={{ width: '7px', height: '7px' }} />
-                EXPORTING...
+                <div className="glow-indicator" style={{ width: '7px', height: '7px', background: '#34d399', boxShadow: '0 0 8px #34d399' }} />
+                SYNCING...
               </>
             ) : (
               <>
-                {/* Download arrow icon */}
+                {/* Google Sheets icon */}
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="3" y1="15" x2="21" y2="15"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
                 </svg>
-                EXPORT TO SHEETS
+                SYNC TO GOOGLE SHEET
               </>
             )}
           </button>
         </div>
       </div>
+
+      {/* Sync toast */}
+      {syncToast === 'success' && (
+        <div style={{
+          padding: '10px 16px', borderRadius: '8px',
+          background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.3)',
+          color: '#34d399', fontSize: '0.76rem', fontFamily: 'var(--font-mono)',
+          display: 'flex', alignItems: 'center', gap: '8px',
+        }}>
+          ✅ Sheet synced — <span style={{ color: 'var(--text-secondary)' }}>trovr_leads_monday_delivery.csv downloaded. Paste into your client's Google Sheet.</span>
+        </div>
+      )}
+      {syncToast === 'error' && (
+        <div style={{
+          padding: '10px 16px', borderRadius: '8px',
+          background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.3)',
+          color: '#fb7185', fontSize: '0.76rem', fontFamily: 'var(--font-mono)',
+        }}>
+          ⚠ Export failed — check backend connection.
+        </div>
+      )}
 
       {/* Log entries */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto' }}>

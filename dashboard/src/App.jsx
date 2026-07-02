@@ -482,11 +482,12 @@ export default function App() {
               />
             )}
 
-            {/* Right panel — Score card */}
             {showRightPanel && (
               <ScoreCard
                 lead={selectedLead}
                 onClose={() => setSelectedLead(null)}
+                logs={logs}
+                onTriggerOutreach={handleTriggerOutreach}
               />
             )}
           </div>
