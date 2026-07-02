@@ -42,8 +42,8 @@ MODELS = {
     },
     "groq": {
         "fast":  "llama-3.1-8b-instant",
-        "smart": "llama-3.3-70b-versatile",
-        "best":  "llama-3.3-70b-versatile",
+        "smart": "qwen/qwen3.6-27b",
+        "best":  "qwen/qwen3.6-27b",
     },
 }
 

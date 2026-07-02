@@ -442,7 +442,7 @@ Return ONLY the message."""
         try:
             from groq import Groq
             client = Groq(api_key=self.groq_key)
-            model = os.getenv("DEFAULT_LLM_MODEL", "llama-3.3-70b-versatile")
+            model = os.getenv("DEFAULT_LLM_MODEL", "qwen/qwen3.6-27b")
             completion = client.chat.completions.create(
                 model=model,
                 messages=[
