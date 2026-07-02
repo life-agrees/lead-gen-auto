@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import Footer from './Footer';
 import TrovrLogo from './TrovrLogo';
 
+const CALENDLY_URL = 'https://calendly.com/pndukwe824/trovr-discovery-call';
+
 // ------- Animated number counter -------
 function Counter({ end, suffix = '', duration = 1800 }) {
   const [val, setVal] = useState(0);
@@ -61,41 +63,41 @@ const FEATURES = [
   {
     icon: '⛓️',
     title: 'On-Chain Signal Scanning',
-    body: 'Monitors Polymarket and Azuro wallets across Polygon, Base, Arbitrum and BNB Chain (BSC) in real time. Active wallets = active builders.',
+    body: 'Scans Polymarket, Azuro, PancakeSwap, and Alpaca Finance wallets across Polygon, Base, Arbitrum, and BNB Chain. Targets real builders and LPs with active balances.',
   },
   {
-    icon: '🐦',
-    title: 'Social Graph Enrichment',
-    body: 'Cross-references Twitter bios, follower counts, and GitHub Solidity activity to build a full builder fingerprint.',
+    icon: '🔍',
+    title: 'DexScreener Ingestion',
+    body: 'Automatically ingests newly launched tokens and contracts to identify emerging builders and project founders the moment they deploy.',
   },
   {
     icon: '🧠',
     title: '22-Signal ML Scoring',
-    body: 'Every lead is scored out of 100 across 22 weighted signals — wallet age, repo commits, follower density, and more.',
+    body: 'Every lead is scored 0–100 across 22 weighted signals—including wallet age, Twitter followers, GitHub commit density, and Solidity repo matches.',
   },
   {
     icon: '✉️',
-    title: 'Hyper-Personalized Outreach',
-    body: 'AI drafts DMs referencing each lead\'s actual activity — not a generic blast. 3-stage nurture sequences auto-queued.',
+    title: 'Personalized DM Sequences',
+    body: 'AI writes custom DMs referencing actual on-chain transactions, ENS names, and Git activity. Day 1, Day 3, and Day 7 nurture sequences generated automatically.',
   },
   {
-    icon: '📊',
-    title: 'Live Intelligence Dashboard',
-    body: 'Real-time HUD showing every lead\'s status, score, outreach history, and reply signals — all in one cybernetic interface.',
+    icon: '📅',
+    title: 'Weekly Monday Delivery',
+    body: 'Receive a clean Google Sheet every Monday with all hot/warm leads, on-chain metrics, and pre-written outreach ready to copy-paste and send.',
   },
   {
     icon: '🔄',
-    title: 'Autonomous Scheduling',
-    body: 'Cron-based pipeline that re-discovers, re-scores, and re-targets on a rolling cadence without manual intervention.',
+    title: 'Autonomous Pipeline',
+    body: 'Runs 100% autonomously: discovers, enriches, scores, and draft-targets without requiring any manual setup or maintenance.',
   },
 ];
 
 const PIPELINE_STEPS = [
-  { label: 'DISCOVER', sub: 'On-chain + social scraping' },
-  { label: 'ENRICH', sub: 'GitHub · Twitter · ENS' },
-  { label: 'SCORE', sub: '22-signal ML model' },
-  { label: 'OUTREACH', sub: 'AI-personalized DMs' },
-  { label: 'TRACK', sub: 'Open · reply signals' },
+  { label: 'DISCOVER', sub: 'On-chain + DexScreener + Twitter' },
+  { label: 'ENRICH', sub: 'GitHub Solidity · ENS · Twitter profile' },
+  { label: 'SCORE', sub: '22-signal ML model (HOT/WARM/COLD)' },
+  { label: 'OUTREACH', sub: 'AI DMs referencing wallet txs' },
+  { label: 'DELIVER', sub: 'Google Sheet every Monday morning' },
 ];
 
 const STATS = [
@@ -118,7 +120,55 @@ const FALLBACK_STATS = [
   { end: 22,  suffix: '+', label: 'SCORING SIGNALS', sub: 'Multi-source intelligence' },
 ];
 
-export default function LandingPage({ onEnterDashboard }) {
+function FAQItem({ q, a }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div 
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '12px',
+        padding: '20px 24px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onClick={() => setOpen(!open)}
+    >
+      <div style={{ 
+        color: '#fff', 
+        fontWeight: 600, 
+        fontSize: '0.97rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        userSelect: 'none'
+      }}>
+        <span>{q}</span>
+        <span style={{ 
+          color: 'var(--accent-cyan)', 
+          transform: open ? 'rotate(90deg)' : 'rotate(0deg)',
+          transition: 'transform 0.2s ease',
+          fontSize: '1rem',
+          lineHeight: 1
+        }}>❯</span>
+      </div>
+      {open && (
+        <div style={{ 
+          color: 'var(--text-secondary)', 
+          fontSize: '0.9rem', 
+          lineHeight: 1.7,
+          marginTop: '12px',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          paddingTop: '12px',
+        }}>
+          {a}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function LandingPage({ onEnterDashboard, onClientLogin }) {
   const [activeStep, setActiveStep] = useState(0);
   const [liveStats, setLiveStats] = useState(FALLBACK_STATS);
 
@@ -164,15 +214,55 @@ export default function LandingPage({ onEnterDashboard }) {
             <a href="#features" className="lp-nav-link">Features</a>
             <a href="#how-it-works" className="lp-nav-link">How It Works</a>
             <a href="#results" className="lp-nav-link">Results</a>
+            <a href="#pricing" className="lp-nav-link">Pricing</a>
             <a href="#faq" className="lp-nav-link">FAQ</a>
-            <a href="https://x.com/gettrovr" target="_blank" rel="noopener noreferrer" className="lp-nav-link" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25z" /></svg>
+            <a
+              href="https://x.com/gettrovr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-nav-link"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25z" />
+              </svg>
               @gettrovr
             </a>
+
+            {/* Client login — subtle, right side */}
+            <button
+              onClick={onClientLogin}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '6px',
+                color: 'var(--text-secondary)',
+                padding: '6px 14px',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-sans)',
+                transition: 'border-color 0.2s ease, color 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = 'var(--accent-cyan)';
+                e.currentTarget.style.color = 'var(--accent-cyan)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }}
+            >
+              Client Login
+            </button>
           </div>
-          <button id="lp-enter-dashboard-btn" className="lp-nav-cta" onClick={onEnterDashboard}>
-            Get My First 10 Leads Free →
-          </button>
+          <a
+            href={CALENDLY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lp-nav-cta"
+          >
+            Book Discovery Call →
+          </a>
         </div>
       </nav>
 
@@ -185,26 +275,46 @@ export default function LandingPage({ onEnterDashboard }) {
         <div className="lp-hero-content">
           <div className="lp-hero-badge">
             <span className="lp-live-pulse" />
-            LIVE · WEB3 FOUNDERS SELLING TO BUILDERS
+            LIVE · ON-CHAIN TRANSACTION INTENT SCANNED DAILY
           </div>
 
           <h1 id="hero-heading" className="lp-hero-h1">
-            Stop Wasting Hours<br />
-            <span className="lp-h1-accent">Hunting Web3 Leads Manually</span>
+            Stop Buying Cold Lists.<br />
+            <span className="lp-h1-accent">Target Active Web3 Users & LPs</span>
           </h1>
 
-          <p className="lp-hero-sub" style={{ maxWidth: '560px' }}>
-            Built for Web3 founders selling dev tools, infra, or B2B SaaS to builders.<br />
-            Trovr scans 4 blockchains + Twitter + GitHub, scores every builder across 22 signals,
-            and writes your DM — in under 60 seconds.
+          <p className="lp-hero-sub" style={{ maxWidth: '580px' }}>
+            Trovr finds the specific wallets, builders, and liquidity providers who have already proven — through real on-chain transactions on Polymarket, Azuro, PancakeSwap, or Alpaca Finance — that they care about what you are building. Get a clean Google Sheet with personalized outreach every Monday.
           </p>
 
           <div className="lp-hero-ctas">
-            <button id="lp-hero-dashboard-btn" className="lp-btn-primary" onClick={onEnterDashboard}>
-              See My First 10 Leads Free →
-            </button>
-            <a href="#how-it-works" className="lp-btn-ghost">Watch How It Works</a>
+            <a
+              href={CALENDLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-btn-primary"
+            >
+              Book a Free Discovery Call →
+            </a>
+            <a href="#how-it-works" className="lp-btn-ghost">See How It Works</a>
           </div>
+          <p style={{
+            fontSize: '0.8rem',
+            color: 'var(--text-secondary)',
+            marginTop: '8px',
+            textAlign: 'center',
+            width: '100%'
+          }}>
+            Questions?{' '}
+            <a
+              href="https://x.com/gettrovr"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--accent-cyan)', textDecoration: 'none' }}
+            >
+              DM @gettrovr on X
+            </a>
+          </p>
 
           {/* Live pipeline animation */}
           <div className="lp-hero-pipeline" aria-label="Pipeline steps">
@@ -370,10 +480,118 @@ export default function LandingPage({ onEnterDashboard }) {
               No credit card. No setup. Just open the HUD and watch Trovr discover,
               score, and draft outreach for real Web3 builders — in real time.
             </p>
-            <button id="lp-bottom-cta-btn" className="lp-btn-primary lp-btn-large" onClick={onEnterDashboard}>
-              See My First 10 Leads Free →
-            </button>
-            <p className="lp-cta-note">No credit card required · Takes under 60 seconds</p>
+            <a
+              href={CALENDLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lp-btn-primary lp-btn-large"
+            >
+              Book a Free Discovery Call →
+            </a>
+            <p className="lp-cta-note">
+              No credit card required · 30 min · Free
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING PLANS ── */}
+      <section className="lp-section lp-section-alt" id="pricing" aria-labelledby="pricing-heading">
+        <div className="lp-section-inner">
+          <div className="lp-section-header">
+            <div className="lp-section-badge">PRICING</div>
+            <h2 id="pricing-heading" className="lp-section-h2">
+              Simple, <span className="lp-accent">Value-Driven Plans</span>
+            </h2>
+            <p className="lp-section-sub">
+              Your first 10 leads are 100% free. Upgrade as your pipeline scales.
+            </p>
+          </div>
+
+          <div className="lp-pricing-grid">
+            <div className="lp-pricing-card">
+              <div>
+                <h3 className="lp-pricing-title">Free Sample</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+                  Test the pipeline and get a small taste of high-intent Web3 leads.
+                </p>
+                <div className="lp-pricing-cost">
+                  <span className="lp-pricing-price">$0</span>
+                  <span className="lp-pricing-setup">No setup fee</span>
+                </div>
+                <ul className="lp-pricing-features">
+                  <li className="lp-pricing-feature">10 scored leads</li>
+                  <li className="lp-pricing-feature">Personalized AI DMs</li>
+                  <li className="lp-pricing-feature">No credit card required</li>
+                  <li className="lp-pricing-feature">Instant dashboard access</li>
+                </ul>
+              </div>
+              <a
+                href="https://x.com/gettrovr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-pricing-btn lp-pricing-btn-secondary"
+              >
+                DM @gettrovr on X
+              </a>
+            </div>
+
+            <div className="lp-pricing-card popular">
+              <div className="lp-pricing-badge">MOST POPULAR</div>
+              <div>
+                <h3 className="lp-pricing-title">Starter</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+                  A solid pipeline of active builders and wallets delivered weekly.
+                </p>
+                <div className="lp-pricing-cost">
+                  <span className="lp-pricing-price">$400<span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/mo</span></span>
+                  <span className="lp-pricing-setup">+$300 setup fee</span>
+                </div>
+                <ul className="lp-pricing-features">
+                  <li className="lp-pricing-feature"><strong>50 hot leads</strong> / month</li>
+                  <li className="lp-pricing-feature">Polymarket + Azuro scanning</li>
+                  <li className="lp-pricing-feature">PancakeSwap + Alpaca scanning</li>
+                  <li className="lp-pricing-feature">Weekly Monday Google Sheet delivery</li>
+                  <li className="lp-pricing-feature">Full AI DM personalization</li>
+                </ul>
+              </div>
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-pricing-btn lp-pricing-btn-primary"
+              >
+                Book a Call →
+              </a>
+            </div>
+
+            <div className="lp-pricing-card">
+              <div>
+                <h3 className="lp-pricing-title">Growth</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
+                  For teams seeking deep coverage and customized protocol tracking.
+                </p>
+                <div className="lp-pricing-cost">
+                  <span className="lp-pricing-price">$600<span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/mo</span></span>
+                  <span className="lp-pricing-setup">+$500 setup fee</span>
+                </div>
+                <ul className="lp-pricing-features">
+                  <li className="lp-pricing-feature"><strong>100 hot leads</strong> / month</li>
+                  <li className="lp-pricing-feature">Custom keyword & contract tracking</li>
+                  <li className="lp-pricing-feature">Weekly Monday Google Sheet delivery</li>
+                  <li className="lp-pricing-feature">AI DM Day 1 / 3 / 7 sequences</li>
+                  <li className="lp-pricing-feature">Dedicated Discord / Slack channel</li>
+                </ul>
+              </div>
+              <a
+                href={CALENDLY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-pricing-btn lp-pricing-btn-secondary"
+              >
+                Book a Call →
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -388,31 +606,23 @@ export default function LandingPage({ onEnterDashboard }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
             {[
               {
-                q: 'Does this only work for prediction market projects?',
-                a: 'No. The on-chain scanner targets active wallet builders across Polygon, Base, Arbitrum, and BNB Chain — useful for any Web3 B2B product. The scoring model identifies active builders, not just prediction market users.',
+                q: 'How does Trovr discover these leads?',
+                a: 'We monitor active smart contracts (such as PancakeSwap, Alpaca Finance, Polymarket, or Azuro) across Base, Polygon, Arbitrum, and BNB Chain. If a wallet interacts with these contracts with real capital in the last 30 days, we extract the signal and match it to a social profile.',
               },
               {
-                q: 'Is my data or my leads\' data private?',
-                a: 'All data is stored in your own Supabase instance. Trovr never stores lead data on shared servers. Wallet addresses are used only for scoring — they are never sold or shared.',
+                q: 'How are the leads and outreach messages delivered?',
+                a: 'Every Monday morning, you receive a clean Google Sheet with all hot/warm leads, their specific on-chain transactions, linked ENS/GitHub profiles, and pre-written Day 1 / 3 / 7 outreach DMs ready to copy-paste.',
               },
               {
-                q: 'How is this different from Apollo or Hunter?',
-                a: 'Apollo and Hunter find email addresses from company databases. Trovr finds active Web3 builders from on-chain activity and GitHub commits — people who are actively building right now, not just listed in a directory.',
+                q: 'How is this different from generic lead lists?',
+                a: 'Everyone else scrapes static Twitter lists or keywords. Trovr cross-references actual wallet activity. A lead who has completed 7 prediction market trades in the last month is a proven high-intent user, not a random cold contact.',
               },
               {
-                q: 'What chains does Trovr scan?',
-                a: 'Polygon, Base, Arbitrum, and BNB Chain (BSC) — with ENS resolution on Ethereum mainnet. More chains are on the roadmap.',
+                q: 'Do you offer a free sample?',
+                a: 'Yes. You can claim a free sample of 10 qualified leads with pre-written DMs. No credit card is required, and you can upgrade to Starter or Growth plans as you scale.',
               },
             ].map(({ q, a }) => (
-              <div key={q} style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '12px',
-                padding: '20px 24px',
-              }}>
-                <div style={{ color: '#fff', fontWeight: 600, marginBottom: '8px', fontSize: '0.97rem' }}>{q}</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.7 }}>{a}</div>
-              </div>
+              <FAQItem key={q} q={q} a={a} />
             ))}
           </div>
         </div>

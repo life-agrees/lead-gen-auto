@@ -159,7 +159,16 @@ export default function App() {
   }
 
   if (showLanding) {
-    return <LandingPage onEnterDashboard={() => setShowLanding(false)} />;
+    return (
+      <LandingPage
+        onEnterDashboard={() => setShowLanding(false)}
+        onClientLogin={() => {
+          // For now just enters dashboard
+          // Later this becomes a real auth gate
+          setShowLanding(false);
+        }}
+      />
+    );
   }
 
   return (
