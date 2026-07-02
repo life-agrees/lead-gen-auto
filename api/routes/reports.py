@@ -28,6 +28,7 @@ def get_dashboard_summary() -> Dict[str, Any]:
     }
     
     total_score = 0.0
+    total_hot_score = 0.0
     highly_fit_count = 0
     
     for lead in leads:
@@ -43,6 +44,7 @@ def get_dashboard_summary() -> Dict[str, Any]:
         total_score += score
         if score >= 70.0:
             highly_fit_count += 1
+            total_hot_score += score
             
         # Segment funnel status — check both `status` and `outreach_status` columns
         outreach_status = (lead.get("outreach_status") or "discovered").lower()
@@ -68,12 +70,14 @@ def get_dashboard_summary() -> Dict[str, Any]:
         
     # Calculate averages
     avg_score = round(total_score / total_leads, 1) if total_leads > 0 else 0.0
+    avg_hot_score = round(total_hot_score / highly_fit_count, 1) if highly_fit_count > 0 else 0.0
     conversion_rate = round((funnel["replied"] / max(funnel["contacted"] + funnel["replied"], 1)) * 100.0, 1)
 
     return {
         "total_leads": total_leads,
         "highly_fit": highly_fit_count,
         "average_score": avg_score,
+        "average_hot_score": avg_hot_score,
         "conversion_rate": conversion_rate,
         "source_breakdown": sources,
         "funnel_metrics": funnel,

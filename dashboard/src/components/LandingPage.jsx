@@ -136,7 +136,7 @@ export default function LandingPage({ onEnterDashboard }) {
         const totalLeads   = data.total_leads     ?? FALLBACK_STATS[0].end;
         const hotLeads     = data.highly_fit      ?? FALLBACK_STATS[1].end;
         const dmsContacted = data.funnel_metrics?.contacted ?? FALLBACK_STATS[2].end;
-        const avgScore     = data.average_score   ?? FALLBACK_STATS[3].end;
+        const avgScore     = data.average_hot_score ?? data.average_score ?? FALLBACK_STATS[3].end;
 
         // Only update if the DB actually has meaningful data
         if (totalLeads > 0) {
