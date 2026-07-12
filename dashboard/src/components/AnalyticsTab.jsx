@@ -316,10 +316,10 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
 
       {/* Row 3: Stage performance grouped bar chart */}
       <div className="cyber-card card-corner-decor">
-        <SectionTitle>STAGE PERFORMANCE — SENT / OPENED / REPLIED</SectionTitle>
+        <SectionTitle>STAGE PERFORMANCE: SENT, OPENED, REPLIED</SectionTitle>
         {stagePerf.every(s => s.Sent === 0) ? (
           <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', padding: '30px' }}>
-            NO STAGE DATA YET — TRIGGER OUTREACH TO POPULATE THIS CHART.
+            No stage data yet. Trigger outreach to populate this chart.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={220}>

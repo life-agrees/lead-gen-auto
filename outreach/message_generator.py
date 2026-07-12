@@ -18,17 +18,22 @@ logger = get_logger("LLMMessageGenerator")
 # ── LLM Persona — injected as system message where supported ──
 # This is what makes the output sound like a real person, not a bot.
 SYSTEM_PERSONA = """\
-You are a real person reaching out on Twitter/X — a Web3 builder yourself,
-reaching out to other builders you've noticed in the space.
-You write the way a thoughtful founder would write in a DM:
-short, specific, and direct. Never robotic. Never using buzzwords.
-Never starting with "Hey there!" or "I came across your profile."
-Every message you write references something real and specific about the person.
+You are a real person reaching out on Twitter/X. You are a Web3 builder yourself.
+You write the way a thoughtful founder writes in a DM: short, direct, specific.
+Never robotic. Never buzzwords. Never "Hey there!" or "I came across your profile."
+You always reference something real and specific about the person.
+
+Strict writing rules you must follow without exception:
+- No em dashes. Use a comma, period, or new sentence instead.
+- Sentence lengths must vary. Mix short sentences with slightly longer ones.
+- Keep it brief. Say what needs to be said and stop.
+- No bullet points or lists of any kind. Write in flowing sentences only.
+- Do not use filler phrases. Every word should earn its place.
 """
 
 # ── Trovr.ai context for the LLM to understand who we represent ─
 TROVR_CONTEXT = """\
-You represent Trovr.ai — a Web3 lead intelligence platform that surfaces
+You represent Trovr.ai, a Web3 lead intelligence platform that surfaces
 high-signal builders, founders, and DeFi operators from on-chain activity,
 GitHub contributions, and social footprints.
 The offer: 10 free leads sourced from live data, no strings attached.
@@ -256,25 +261,23 @@ Here is everything we know about them:
 
 {lead_summary}
 
-Write a DM that:
-- Opens by referencing something SPECIFIC and REAL from the data above
-  (one of their actual tweets, their ENS name, a GitHub repo they own,
-  a specific chain they're active on, or something unique in their bio).
-  Do NOT make something up or be vague.
-- Briefly explains what Trovr.ai does in ONE plain sentence — not a sales pitch,
-  just context so they understand why you're reaching out.
-- Ends with a low-pressure offer: 10 free leads from our data, reply to claim.
-- Is 2–4 sentences max. Short and direct.
-- Sounds like a real person writing to another builder they respect.
-  Semi-casual, semi-formal. Like a colleague, not a salesperson.
-- Does NOT start with "Hey [name]!" or "Hope this finds you well" or
-  "I came across your profile".
-- Does NOT use any of these words: pipeline, synergy, leverage, automate,
-  optimize, solutions, ecosystem (as buzzwords).
-- If you genuinely cannot find ONE specific thing from their data to reference,
-  return exactly: INSUFFICIENT_DATA
+Write a DM that opens by referencing something SPECIFIC and REAL from the data above.
+Use one of their actual tweets, their ENS name, a GitHub repo, a chain they're active on,
+or something concrete in their bio. Do NOT be vague or make anything up.
+Briefly explain what Trovr.ai does in one plain sentence, not a sales pitch.
+End with a low-pressure offer: 10 free leads from our data, reply to claim.
 
-Return ONLY the message text. No quotes around it. No preamble."""
+Hard rules:
+- 2 to 4 sentences maximum. No more.
+- No em dashes. Use commas or separate sentences instead.
+- Sentence lengths must vary naturally. Avoid uniform rhythm.
+- No bullet points or lists. Flowing prose only.
+- Do not start with "Hey [name]" or "Hope this finds you well" or "I came across your profile".
+- Avoid these words as buzzwords: pipeline, synergy, leverage, automate, optimize, solutions, ecosystem.
+- Sound like a real person writing to a builder they respect. Semi-casual, semi-formal.
+- If you cannot find one specific real thing to reference, return exactly: INSUFFICIENT_DATA
+
+Return ONLY the message text. No quotes. No preamble."""
 
         if self.provider == "mock":
             return self._generate_templated_mock(lead, "day_1_pitch")
@@ -307,16 +310,14 @@ Return ONLY the message text. No quotes around it. No preamble."""
 {self.trovr_context}
 
 Write a short follow-up DM to @{handle} (name: {name}).
-3 days ago we reached out about Trovr.ai — they haven't replied.
+3 days ago we reached out about Trovr.ai and they haven't replied.
 
 What we know about them: {signal}
 
-Guidelines:
-- 1–2 sentences max.
-- Reference what we noticed about them ({signal}) to show this isn't a mass message.
-- Low-pressure, no guilt-tripping, no "just checking in".
-- Semi-casual, semi-formal — like a colleague nudging, not a salesperson following up.
-- Do NOT start with "Hey" or "Hi [name]".
+Write 1 to 2 sentences. Reference what you noticed about them ({signal}) so it
+clearly isn't a mass message. Keep it low-pressure. No guilt. No "just checking in".
+Semi-casual, semi-formal. Do not start with "Hey" or "Hi [name]".
+No em dashes. Vary sentence length naturally. No bullet points.
 
 Return ONLY the message."""
         else:
@@ -324,16 +325,14 @@ Return ONLY the message."""
 {self.trovr_context}
 
 Write a short final DM to @{handle} (name: {name}).
-This is the last message in our outreach sequence — we're closing their slot.
+This is the last message in our outreach sequence.
 
 What we know about them: {signal}
 
-Guidelines:
-- 1–2 sentences max.
-- Reference what caught our attention about them ({signal}).
-- Warm, no hard feelings, leave the door genuinely open.
-- Sound like a real person, not a bot closing a CRM ticket.
-- Semi-casual, semi-formal.
+Write 1 to 2 sentences. Reference what caught your attention ({signal}).
+Warm tone, no hard feelings, leave the door genuinely open.
+Sound like a real person, not a bot closing a ticket.
+Semi-casual, semi-formal. No em dashes. No bullet points. Vary sentence length.
 
 Return ONLY the message."""
 
@@ -472,56 +471,56 @@ Return ONLY the message."""
         if stage == "day_1_pitch":
             if ens:
                 return (
-                    f"Saw your ENS {ens} — clearly you're serious about on-chain identity. "
-                    f"We built Trovr.ai to surface operators like you before the crowd does. "
-                    f"Reply and I'll drop 10 free leads for you, no strings."
+                    f"Saw your ENS {ens} and figured I'd reach out. "
+                    f"Trovr.ai tracks on-chain and social signals to surface builders worth knowing. "
+                    f"Reply and I'll send 10 free leads your way, no strings."
                 )
             elif tweets:
                 t = tweets[0]
                 snippet = (t.get("text", t) if isinstance(t, dict) else t)[:80].strip()
                 return (
-                    f'Caught your tweet: "{snippet}" — that\'s exactly the signal we track at Trovr.ai. '
-                    f"We map Web3 builder graphs to surface high-quality deal flow. "
+                    f'Your tweet, "{snippet}", is exactly the kind of signal we track at Trovr.ai. '
+                    f"We surface high-quality Web3 deal flow from real builder data. "
                     f"Reply and I'll send you 10 free leads."
                 )
             elif repos:
                 repo = repos[0].split("/")[-1]
                 return (
-                    f"Your work on {repo} caught our attention — solid builder energy. "
-                    f"Trovr.ai tracks on-chain + social signals to surface operators like you. "
+                    f"Your work on {repo} stood out. "
+                    f"Trovr.ai maps on-chain and social signals to find operators like you. "
                     f"Reply and grab 10 free leads, on us."
                 )
             elif chains:
                 chain_str = " and ".join(chains[:2])
                 return (
-                    f"Your activity across {chain_str} has you on our radar as a serious operator. "
-                    f"Trovr.ai surfaces high-signal deal flow for builders at your level. "
-                    f"Reply for 10 free leads, no pitch, no strings."
+                    f"Your activity across {chain_str} put you on our radar. "
+                    f"Trovr.ai surfaces high-signal deal flow for builders at this level. "
+                    f"Reply for 10 free leads, no pitch."
                 )
             elif bio:
                 snippet = bio[:60].strip()
                 return (
-                    f'Your bio — "{snippet}..." — is exactly what we look for when sourcing deal flow. '
+                    f'Your bio, "{snippet}", is exactly what we look for when sourcing deal flow. '
                     f"Trovr.ai maps Web3 builder graphs in real time. "
-                    f"Reply for 10 free leads, no obligations."
+                    f"Reply for 10 free leads."
                 )
             else:
                 return (
-                    f"Your {source} activity has you on our radar as a serious Web3 operator. "
-                    f"Trovr.ai surfaces high-conviction deal flow for builders like you. "
+                    f"Your {source} activity put you on our radar. "
+                    f"Trovr.ai surfaces high-conviction deal flow for serious Web3 builders. "
                     f"Reply and I'll send 10 free leads to your inbox."
                 )
 
         elif stage == "day_3_followup":
             signal = _get_best_signal(lead)
             return (
-                f"Bumping this, {name} — noticed {signal} and thought this was worth a second look. "
-                f"Still happy to drop those 10 free Trovr.ai leads if now's a better time."
+                f"Bumping this, {name}. Noticed {signal} and still think it's worth a look. "
+                f"Happy to drop those 10 free Trovr.ai leads if now works better."
             )
 
         else:  # day_7_breakup
             signal = _get_best_signal(lead)
             return (
-                f"Closing out your slot — genuinely found {signal} interesting, "
-                f"feel free to ping if you ever want to revisit. Good luck with the build."
+                f"Closing out your slot. Genuinely found {signal} interesting. "
+                f"Feel free to ping if you ever want to revisit. Good luck with the build."
             )
