@@ -363,44 +363,61 @@ export default function App() {
         {/* Bottom panel — compact layout, no scroll needed */}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-          {/* Action row — side by side when expanded */}
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              id="btn-run-scrapers"
-              className="cyber-btn cyber-btn-purple"
-              onClick={handleTriggerPipeline}
-              disabled={pipelineRunning}
-              title={pipelineRunning ? 'Scanning...' : 'Run Scrapers'}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.68rem', padding: '8px 6px' }}
-            >
-              {pipelineRunning ? (
-                <><div className="glow-indicator" style={{ background: '#fff', boxShadow: '0 0 8px #fff' }} />{!sidebarCollapsed && 'SCANNING'}</>
-              ) : (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  {!sidebarCollapsed && <span>SCRAPERS</span>}
-                </>
-              )}
-            </button>
+          {/* Action buttons — stacked vertically to match nav layout */}
+          <button
+            id="btn-run-scrapers"
+            className="cyber-btn cyber-btn-purple"
+            onClick={handleTriggerPipeline}
+            disabled={pipelineRunning}
+            title={pipelineRunning ? 'Scanning...' : 'Run Scrapers'}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+              gap: '10px',
+              fontSize: '0.68rem',
+              padding: sidebarCollapsed ? '10px' : '10px 12px'
+            }}
+          >
+            {pipelineRunning ? (
+              <>
+                <div className="glow-indicator" style={{ background: '#fff', boxShadow: '0 0 8px #fff' }} />
+                {!sidebarCollapsed && <span>SCANNING...</span>}
+              </>
+            ) : (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                {!sidebarCollapsed && <span>RUN SCRAPERS</span>}
+              </>
+            )}
+          </button>
 
-            <button
-              id="btn-refresh"
-              className="cyber-btn"
-              onClick={fetchData}
-              title="Refresh Data"
-              style={{ flex: 1, fontSize: '0.68rem', padding: '8px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                <path d="M21 3v5h-5"/>
-                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                <path d="M8 16H3v5"/>
-              </svg>
-              {!sidebarCollapsed && <span>REFRESH</span>}
-            </button>
-          </div>
+          <button
+            id="btn-refresh"
+            className="cyber-btn"
+            onClick={fetchData}
+            title="Refresh Data"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+              gap: '10px',
+              fontSize: '0.68rem',
+              padding: sidebarCollapsed ? '10px' : '10px 12px'
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M8 16H3v5"/>
+            </svg>
+            {!sidebarCollapsed && <span>REFRESH DATA</span>}
+          </button>
 
           {/* Theme toggle */}
           <button
