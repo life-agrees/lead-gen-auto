@@ -68,6 +68,39 @@ def _write_fallback(data: dict) -> None:
         json.dump(data, f, indent=2)
 
 
+def _read_trial_passcode() -> str:
+    """
+    Always reads trial_passcode from the local JSON file.
+    This keeps it independent of the Supabase campaigns table schema,
+    so no DB migration is needed.
+    """
+    if os.path.exists(SETTINGS_FALLBACK_PATH):
+        try:
+            with open(SETTINGS_FALLBACK_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("trial_passcode", DEFAULT_SETTINGS["trial_passcode"])
+        except Exception:
+            pass
+    return DEFAULT_SETTINGS["trial_passcode"]
+
+
+def _write_trial_passcode(code: str) -> None:
+    """
+    Always writes trial_passcode to the local JSON file, merging with
+    whatever else is already stored there.
+    """
+    existing: dict = {}
+    if os.path.exists(SETTINGS_FALLBACK_PATH):
+        try:
+            with open(SETTINGS_FALLBACK_PATH, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            pass
+    existing["trial_passcode"] = code
+    with open(SETTINGS_FALLBACK_PATH, "w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2)
+
+
 def _read_from_supabase() -> dict:
     try:
         res = (
@@ -87,10 +120,12 @@ def _read_from_supabase() -> dict:
                 "keywords": row.get("keywords", DEFAULT_SETTINGS["keywords"]) or DEFAULT_SETTINGS["keywords"],
                 "digest_enabled": row.get("digest_enabled", False),
                 "digest_email": row.get("digest_email", ""),
+                # trial_passcode is always sourced from the local file, not Supabase
+                "trial_passcode": _read_trial_passcode(),
             }
     except Exception as e:
         logger.warning(f"Could not read settings from Supabase: {e}")
-    return dict(DEFAULT_SETTINGS)
+    return {**dict(DEFAULT_SETTINGS), "trial_passcode": _read_trial_passcode()}
 
 
 def _write_to_supabase(data: dict) -> None:
@@ -119,6 +154,10 @@ def _write_to_supabase(data: dict) -> None:
     except Exception as e:
         logger.error(f"Could not write settings to Supabase: {e}")
         raise
+    finally:
+        # Always persist trial_passcode locally regardless of Supabase success/failure
+        if "trial_passcode" in data:
+            _write_trial_passcode(data["trial_passcode"])
 
 
 @router.get("/campaign")
@@ -150,7 +189,8 @@ def verify_access_code(body: VerifyCodeRequest) -> dict:
     Verifies a client or admin access code.
     Returns { "verified": true, "role": "admin" | "trial" } on success.
     The admin master code is read from the ADMIN_MASTER_CODE env var.
-    The trial passcode is the one stored dynamically in campaign settings.
+    The trial passcode is always read from the local JSON file so it reflects
+    whatever was last saved via the Settings panel.
     """
     submitted = (body.code or "").strip()
     if not submitted:
@@ -160,15 +200,9 @@ def verify_access_code(body: VerifyCodeRequest) -> dict:
     if submitted == ADMIN_MASTER_CODE:
         return {"verified": True, "role": "admin"}
 
-    # Load stored trial passcode from settings
-    try:
-        if db.use_supabase:
-            current_settings = _read_from_supabase()
-        else:
-            current_settings = _read_fallback()
-        trial_code = current_settings.get("trial_passcode", DEFAULT_SETTINGS["trial_passcode"])
-    except Exception:
-        trial_code = DEFAULT_SETTINGS["trial_passcode"]
+    # Always read from local file — never from Supabase — so saves always take effect
+    trial_code = _read_trial_passcode()
+    logger.info(f"verify-code: submitted='{submitted}', active_trial_code='{trial_code}'")
 
     if submitted == trial_code:
         return {"verified": True, "role": "trial"}
