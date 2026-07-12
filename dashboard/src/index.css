@@ -181,6 +181,7 @@ body {
 /* ── Sidebar ── */
 .cyber-sidebar {
   width: 280px;
+  flex-shrink: 0;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   backdrop-filter: blur(20px) saturate(160%);
@@ -198,6 +199,12 @@ body {
   overflow-x: hidden;
   transition: width 0.25s ease, padding 0.25s ease;
   scrollbar-width: thin;
+}
+
+/* Collapsed sidebar — icon-only strip */
+.cyber-hud-container.collapsed .cyber-sidebar {
+  width: 64px;
+  overflow: hidden;
 }
 .cyber-sidebar::-webkit-scrollbar {
   width: 4px;

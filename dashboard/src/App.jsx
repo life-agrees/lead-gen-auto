@@ -386,7 +386,9 @@ export default function App() {
 
         {/* Nav */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {NAV_TABS.map(tab => {
+        {NAV_TABS
+          .filter(tab => !(isTrialMode && tab.id === 'settings'))
+          .map(tab => {
             const active = activeTab === tab.id;
             return (
               <button
