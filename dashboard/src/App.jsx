@@ -7,6 +7,7 @@ import AnalyticsTab from './components/AnalyticsTab';
 import SettingsPanel from './components/SettingsPanel';
 import Preloader from './components/Preloader';
 import LandingPage from './components/LandingPage';
+import ClientDashboard from './components/ClientDashboard';
 
 // Production API base points directly to Northflank, local dev uses Vite proxy
 const API_BASE = import.meta.env.DEV ? '/api' : 'https://p01--lead-gen--yg8hh58rzsgq.code.run/api';
@@ -73,6 +74,7 @@ export default function App() {
 
   const toggleTheme = () => setTheme(t => t === 'midnight' ? 'eclipse' : 'midnight');
   const [showLanding, setShowLanding] = useState(true);
+  const [isAdminView, setIsAdminView] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [leads, setLeads] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -214,12 +216,26 @@ export default function App() {
       <LandingPage
         onEnterDashboard={(trial = false) => {
           setIsTrialMode(trial);
+          setIsAdminView(!trial);
           setShowLanding(false);
         }}
         onClientLogin={(trial = false) => {
           setIsTrialMode(trial);
+          setIsAdminView(!trial);
           setShowLanding(false);
         }}
+      />
+    );
+  }
+
+  if (!isAdminView) {
+    return (
+      <ClientDashboard
+        leads={displayedLeads}
+        logs={logs}
+        isTrialMode={isTrialMode}
+        onLogout={() => setShowLanding(true)}
+        theme={theme}
       />
     );
   }
