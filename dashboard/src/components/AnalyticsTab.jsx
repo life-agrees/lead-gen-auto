@@ -107,8 +107,62 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
   // --- Daily activity line ---
   const dailyData = pipelineReport.daily_activity || [];
 
+  // --- Source performance bar data (total vs HOT per source) ---
+  const sourcePerformanceData = Object.entries(pipelineStats.sources || {}).map(([key, total]) => ({
+    source: key.toUpperCase(),
+    Total: total,
+    Hot: (pipelineStats.hot_by_source || {})[key] || 0,
+    color: COLORS[key] || COLORS.unknown,
+  }));
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+      {/* Row 0: Source Performance grouped bar chart */}
+      <div className="cyber-card card-corner-decor">
+        <SectionTitle>SOURCE PERFORMANCE: TOTAL vs HIGH-FIT LEADS</SectionTitle>
+        {sourcePerformanceData.length === 0 ? (
+          <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', padding: '20px' }}>
+            NO SOURCE DATA AVAILABLE
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={sourcePerformanceData} barGap={4} barSize={22}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis
+                dataKey="source"
+                tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontFamily: 'var(--font-hud)' }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+              <Legend
+                formatter={(value) => (
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{value}</span>
+                )}
+              />
+              <defs>
+                <linearGradient id="totalSourceGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8b9eb8" stopOpacity={0.8} />
+                  <stop offset="100%" stopColor="#334155" stopOpacity={0.4} />
+                </linearGradient>
+                <linearGradient id="hotSourceGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00f0ff" stopOpacity={1.0} />
+                  <stop offset="100%" stopColor="#0072ff" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <Bar dataKey="Total" fill="url(#totalSourceGrad)" radius={[3, 3, 0, 0]} activeBar={{ fill: 'url(#totalSourceGrad)', stroke: '#8b9eb8', strokeWidth: 1 }} />
+              <Bar dataKey="Hot" fill="url(#hotSourceGrad)" radius={[3, 3, 0, 0]} activeBar={{ fill: 'url(#hotSourceGrad)', stroke: '#00f0ff', strokeWidth: 1.5 }} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
 
       {/* Row 1: Tier + Source pie charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>

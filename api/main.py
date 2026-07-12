@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import leads, outreach, reports
+from api.routes import leads, outreach, reports, settings, digest
 from api.db.supabase_client import DatabaseClient
 from utils.logger import get_logger
 from datetime import datetime, timezone
@@ -39,13 +39,15 @@ app.add_middleware(
 app.include_router(leads.router, prefix="/api")
 app.include_router(outreach.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
+app.include_router(settings.router, prefix="/api")
+app.include_router(digest.router, prefix="/api")
 
 @app.on_event("startup")
 def on_startup():
     logger.info("Initializing API services...")
     # Trigger DB tables verify/create
     db = DatabaseClient()
-    
+
     # Bootstrap seed leads if database is empty for instantaneous premium experience
     try:
         existing_leads = db.get_leads(0.0)
@@ -54,6 +56,15 @@ def on_startup():
             _seed_initial_data(db)
     except Exception as e:
         logger.error(f"Failed to verify or seed database startup rows: {str(e)}")
+
+    # Start background scheduler for daily digest
+    from api.scheduler import start_scheduler
+    start_scheduler()
+
+@app.on_event("shutdown")
+def on_shutdown():
+    from api.scheduler import stop_scheduler
+    stop_scheduler()
 
 def _seed_initial_data(db: DatabaseClient):
     """Generates high-fit and medium-fit seed data representation."""

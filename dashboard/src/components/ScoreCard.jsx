@@ -387,6 +387,27 @@ function OutreachSequence({ lead, logs, onTriggerOutreach }) {
 // ── Main ScoreCard ───────────────────────────────────────────────────────────
 export default function ScoreCard({ lead, onClose, logs, onTriggerOutreach }) {
   const [activeSection, setActiveSection] = useState('overview');
+  const [enriching, setEnriching] = useState(false);
+  const [enrichToast, setEnrichToast] = useState(null);
+
+  const handleEnrich = async () => {
+    if (!lead?.id || enriching) return;
+    setEnriching(true);
+    setEnrichToast(null);
+    try {
+      const res = await fetch(`${API_BASE}/leads/${lead.id}/rescore`, { method: 'POST' });
+      if (res.ok) {
+        setEnrichToast({ type: 'success', msg: 'Score refreshed' });
+      } else {
+        setEnrichToast({ type: 'error', msg: 'Rescore failed' });
+      }
+    } catch {
+      setEnrichToast({ type: 'error', msg: 'Could not reach backend' });
+    } finally {
+      setEnriching(false);
+      setTimeout(() => setEnrichToast(null), 3000);
+    }
+  };
 
   if (!lead) {
     return (
@@ -550,9 +571,54 @@ export default function ScoreCard({ lead, onClose, logs, onTriggerOutreach }) {
         {activeSection === 'overview' && (
           <>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-hud)', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>
-                CRITERIA COEFFICIENT MATRIX
+              {/* Row: label + Enrich button */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-hud)', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>
+                  CRITERIA COEFFICIENT MATRIX
+                </div>
+                <button
+                  onClick={handleEnrich}
+                  disabled={enriching}
+                  style={{
+                    background: enriching ? 'rgba(0,240,255,0.04)' : 'rgba(0,240,255,0.08)',
+                    border: '1px solid rgba(0,240,255,0.25)',
+                    borderRadius: '6px',
+                    color: enriching ? 'var(--text-secondary)' : 'var(--accent-cyan)',
+                    fontFamily: 'var(--font-hud)', fontSize: '0.6rem', letterSpacing: '0.8px',
+                    padding: '4px 10px', cursor: enriching ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {enriching ? (
+                    <>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '1.5px solid var(--accent-cyan)', borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
+                      ENRICHING...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                      </svg>
+                      ENRICH
+                    </>
+                  )}
+                </button>
               </div>
+
+              {/* Enrich toast */}
+              {enrichToast && (
+                <div style={{
+                  padding: '7px 12px', borderRadius: '6px', fontSize: '0.72rem',
+                  fontFamily: 'var(--font-mono)',
+                  background: enrichToast.type === 'success' ? 'rgba(52,211,153,0.1)' : 'rgba(251,113,133,0.1)',
+                  border: `1px solid ${enrichToast.type === 'success' ? 'rgba(52,211,153,0.3)' : 'rgba(251,113,133,0.3)'}`,
+                  color: enrichToast.type === 'success' ? '#34d399' : '#fb7185',
+                }}>
+                  {enrichToast.type === 'success' ? '✓' : '⚠'} {enrichToast.msg}
+                </div>
+              )}
+
               {scoreStats.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontFamily: 'var(--font-hud)' }}>

@@ -90,17 +90,21 @@ def get_leads_stats() -> Dict[str, Any]:
         else:
             stage_counts["discovered"] += 1
 
-    # Source distribution
+    # Source distribution + hot leads per source
     sources: Dict[str, int] = {}
+    hot_by_source: Dict[str, int] = {}
     for lead in leads:
         src = lead.get("source", "unknown").lower()
         sources[src] = sources.get(src, 0) + 1
+        if lead.get("score", 0) >= 70:
+            hot_by_source[src] = hot_by_source.get(src, 0) + 1
 
     return {
         "total": len(leads),
         "tiers": {"hot": hot, "warm": warm, "cold": cold},
         "pipeline": stage_counts,
         "sources": sources,
+        "hot_by_source": hot_by_source,
     }
 
 @router.get("/", response_model=List[LeadBase])

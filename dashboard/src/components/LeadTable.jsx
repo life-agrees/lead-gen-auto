@@ -32,6 +32,8 @@ const statusToDisplayClass = (status) => {
   return 'status-discovered';
 };
 
+const API_BASE = import.meta.env.DEV ? '/api' : 'https://p01--lead-gen--yg8hh58rzsgq.code.run/api';
+
 export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTriggerOutreach }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState('all');
@@ -124,6 +126,25 @@ export default function LeadTable({ leads, onSelectLead, onRescoreLead, onTrigge
               {minScoreFilter}
             </span>
           </div>
+
+          {/* Export CSV */}
+          <button
+            id="btn-export-csv"
+            className="cyber-btn"
+            onClick={() => window.open(`${API_BASE}/outreach/export`, '_blank')}
+            title="Download all outreach logs as CSV"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '7px',
+              padding: '7px 13px', fontSize: '0.68rem', whiteSpace: 'nowrap',
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            EXPORT CSV
+          </button>
         </div>
       </div>
 
