@@ -69,7 +69,8 @@ def get_dashboard_summary() -> Dict[str, Any]:
         funnel["replied"] = replied_logs
         
     # Calculate averages
-    avg_score = round(total_score / total_leads, 1) if total_leads > 0 else 0.0
+    scored_leads = [l for l in leads if l.get("score", 0.0) > 0.0]
+    avg_score = round(sum(l.get("score", 0.0) for l in scored_leads) / len(scored_leads), 1) if scored_leads else 0.0
     avg_hot_score = round(total_hot_score / highly_fit_count, 1) if highly_fit_count > 0 else 0.0
     conversion_rate = round((funnel["replied"] / max(funnel["contacted"] + funnel["replied"], 1)) * 100.0, 1)
 

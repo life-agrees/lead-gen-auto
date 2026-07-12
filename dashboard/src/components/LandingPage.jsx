@@ -61,32 +61,32 @@ function PipelineStep({ num, label, sub, active }) {
 
 const FEATURES = [
   {
-    icon: '⛓️',
+    icon: '⬡',
     title: 'On-Chain Signal Scanning',
     body: 'Scans Polymarket, Azuro, PancakeSwap, and Alpaca Finance wallets across Polygon, Base, Arbitrum, and BNB Chain. Targets real builders and LPs with active balances.',
   },
   {
-    icon: '🔍',
+    icon: '◆',
     title: 'DexScreener Ingestion',
     body: 'Automatically ingests newly launched tokens and contracts to identify emerging builders and project founders the moment they deploy.',
   },
   {
-    icon: '🧠',
+    icon: '◈',
     title: '22-Signal ML Scoring',
     body: 'Every lead is scored 0–100 across 22 weighted signals—including wallet age, Twitter followers, GitHub commit density, and Solidity repo matches.',
   },
   {
-    icon: '✉️',
+    icon: '✦',
     title: 'Personalized DM Sequences',
     body: 'AI writes custom DMs referencing actual on-chain transactions, ENS names, and Git activity. Day 1, Day 3, and Day 7 nurture sequences generated automatically.',
   },
   {
-    icon: '📅',
+    icon: '■',
     title: 'Weekly Monday Delivery',
     body: 'Receive a clean Google Sheet every Monday with all hot/warm leads, on-chain metrics, and pre-written outreach ready to copy-paste and send.',
   },
   {
-    icon: '🔄',
+    icon: '⚙',
     title: 'Autonomous Pipeline',
     body: 'Runs 100% autonomously: discovers, enriches, scores, and draft-targets without requiring any manual setup or maintenance.',
   },
@@ -461,8 +461,8 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
           >
             <div className="lp-tweet-header">
-              <div className="lp-tweet-avatar">
-                <span>🔭</span>
+              <div className="lp-tweet-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: 'var(--accent-cyan)', fontWeight: '800', fontFamily: 'var(--font-hud)', fontSize: '1rem' }}>T</span>
               </div>
               <div>
                 <div className="lp-tweet-name">@gettrovr</div>
@@ -479,7 +479,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
               → ML-scores leads across 22 signals<br />
               → Generates personalized outreach automatically<br /><br />
               Ran a pilot: <strong>129 leads found, 8 HOT</strong>, avg score <strong>98/100</strong>. <strong>16 DMs sent</strong>.<br /><br />
-              First 10 leads free. DM me. 👁️
+              First 10 leads free. DM me.
             </p>
             <div className="lp-tweet-tags">#Web3 #DeFi #BuildInPublic</div>
           </div>
