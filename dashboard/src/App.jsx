@@ -11,10 +11,43 @@ import LandingPage from './components/LandingPage';
 const API_BASE = import.meta.env.DEV ? '/api' : 'https://p01--lead-gen--yg8hh58rzsgq.code.run/api';
 
 const NAV_TABS = [
-  { id: 'dashboard', icon: '📊', label: 'PIPELINE SUMMARY' },
-  { id: 'telemetry', icon: '🕵️', label: 'LEAD TELEMETRY' },
-  { id: 'analytics', icon: '📈', label: 'ANALYTICS' },
-  { id: 'outreach', icon: '✉️', label: 'OUTREACH DISPATCH' },
+  {
+    id: 'dashboard',
+    label: 'PIPELINE SUMMARY',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'telemetry',
+    label: 'LEAD TELEMETRY',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'analytics',
+    label: 'ANALYTICS',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'outreach',
+    label: 'OUTREACH DISPATCH',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function App() {
@@ -191,9 +224,9 @@ export default function App() {
         className="cyber-sidebar"
         style={{
           width: '100%',
-          overflowY: 'auto',
+          overflowY: 'visible',
           overflowX: 'hidden',
-          padding: sidebarCollapsed ? '16px 10px' : '24px',
+          padding: sidebarCollapsed ? '16px 10px' : '20px',
           transition: 'padding 0.25s ease',
         }}
       >
@@ -220,13 +253,12 @@ export default function App() {
           {sidebarCollapsed ? '»' : '«'}
         </button>
 
-                {/* ── Logo (eye icon always visible, wordmark hidden when collapsed) ── */}
-        <div className="cyber-logo" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '16px', marginBottom: '4px', overflow: 'visible' }}>
+        <div className="cyber-logo" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px', marginBottom: '2px', overflow: 'visible' }}>
           <svg
             className="cyber-logo-svg"
             viewBox={sidebarCollapsed ? "120 183 86 62" : "100 175 295 78"}
             width="100%"
-            height={sidebarCollapsed ? '54px' : '58px'}
+            height={sidebarCollapsed ? '46px' : '50px'}
             style={{ display: 'block', overflow: 'visible' }}
           >
             <defs>
@@ -321,60 +353,66 @@ export default function App() {
                   fontWeight: active ? '700' : '400',
                 }}
               >
-                <span style={{ fontSize: sidebarCollapsed ? '1.1rem' : 'inherit' }}>{tab.icon}</span>
+                <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{tab.icon}</span>
                 {!sidebarCollapsed && <span>{tab.label}</span>}
               </button>
             );
           })}
         </div>
 
-        {/* Bottom panel */}
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {!sidebarCollapsed && (
-            <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-hud)', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>
-              SYSTEM ORCHESTRATION
-            </div>
-          )}
+        {/* Bottom panel — compact layout, no scroll needed */}
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-          <button
-            id="btn-run-scrapers"
-            className="cyber-btn cyber-btn-purple"
-            onClick={handleTriggerPipeline}
-            disabled={pipelineRunning}
-            title={sidebarCollapsed ? (pipelineRunning ? 'Scanning...' : 'Run Scrapers') : undefined}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-          >
-            {pipelineRunning ? (
-              <>
-                <div className="glow-indicator" style={{ background: '#fff', boxShadow: '0 0 8px #fff' }} />
-                {!sidebarCollapsed && 'SCANNING...'}
-              </>
-            ) : (
-              <>{sidebarCollapsed ? '⚡' : '⚡ RUN SCRAPERS'}</>
-            )}
-          </button>
+          {/* Action row — side by side when expanded */}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              id="btn-run-scrapers"
+              className="cyber-btn cyber-btn-purple"
+              onClick={handleTriggerPipeline}
+              disabled={pipelineRunning}
+              title={pipelineRunning ? 'Scanning...' : 'Run Scrapers'}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.68rem', padding: '8px 6px' }}
+            >
+              {pipelineRunning ? (
+                <><div className="glow-indicator" style={{ background: '#fff', boxShadow: '0 0 8px #fff' }} />{!sidebarCollapsed && 'SCANNING'}</>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  {!sidebarCollapsed && <span>SCRAPERS</span>}
+                </>
+              )}
+            </button>
 
-          <button
-            id="btn-refresh"
-            className="cyber-btn"
-            onClick={fetchData}
-            title={sidebarCollapsed ? 'Refresh Data' : undefined}
-            style={{ width: '100%', fontSize: '0.7rem', padding: '8px' }}
-          >
-            {sidebarCollapsed ? '🔄' : '🔄 REFRESH DATA'}
-          </button>
+            <button
+              id="btn-refresh"
+              className="cyber-btn"
+              onClick={fetchData}
+              title="Refresh Data"
+              style={{ flex: 1, fontSize: '0.68rem', padding: '8px 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+              </svg>
+              {!sidebarCollapsed && <span>REFRESH</span>}
+            </button>
+          </div>
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
             className="theme-toggle-btn"
-            title={`Switch to ${theme === 'midnight' ? 'Eclipse (Emerald)' : 'Midnight (Indigo)'} theme`}
+            title={`Switch to ${theme === 'midnight' ? 'Eclipse' : 'Midnight'} theme`}
             style={{ justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}
           >
             <div className="theme-toggle-swatch" style={{
               background: theme === 'midnight'
-                ? 'linear-gradient(90deg, #34d399, #22d3ee)'  /* preview eclipse */
-                : 'linear-gradient(90deg, #818cf8, #a78bfa)', /* preview midnight */
+                ? 'linear-gradient(90deg, #34d399, #22d3ee)'
+                : 'linear-gradient(90deg, #818cf8, #a78bfa)',
             }} />
             {!sidebarCollapsed && (
               <span style={{ fontSize: '0.68rem', letterSpacing: '0.8px' }}>
@@ -383,21 +421,22 @@ export default function App() {
             )}
           </button>
 
+          {/* Compact system status — one row */}
           {!sidebarCollapsed && (
-
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px', lineHeight: '1.6' }}>
-              DATABASE:{' '}
-              <span style={{ color: systemStatus?.db_mode === 'supabase' ? '#34d399' : 'var(--accent-cyan)' }}>
-                {systemStatus?.db_label || 'CONNECTING...'}
-              </span><br />
-              LEADS:{' '}
-              <span style={{ color: '#fff' }}>{systemStatus?.lead_count ?? '—'}</span><br />
-              STATUS: <span style={{ color: '#34d399' }}>SYS_ONLINE</span><br />
-              {lastRefresh && (
-                <>
-                  SYNCED: <span style={{ color: '#fff' }}>{lastRefresh.toLocaleTimeString()}</span>
-                </>
-              )}
+            <div style={{
+              fontSize: '0.64rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)',
+              borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px',
+            }}>
+              <span>
+                <span style={{ color: systemStatus?.db_mode === 'supabase' ? '#34d399' : 'var(--accent-cyan)' }}>
+                  {systemStatus?.db_label || '...'}
+                </span>
+                {' · '}
+                <span style={{ color: '#fff' }}>{systemStatus?.lead_count ?? '?'}</span>
+                <span> leads</span>
+              </span>
+              <span style={{ color: '#34d399' }}>ONLINE</span>
             </div>
           )}
         </div>
