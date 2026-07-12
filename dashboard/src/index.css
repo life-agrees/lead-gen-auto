@@ -194,9 +194,20 @@ body {
   position: sticky;
   top: 20px;
   max-height: calc(100vh - 40px);
-  overflow-y: visible;
+  overflow-y: auto;
   overflow-x: hidden;
   transition: width 0.25s ease, padding 0.25s ease;
+  scrollbar-width: thin;
+}
+.cyber-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.cyber-sidebar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(129, 140, 248, 0.35));
+  border-radius: var(--radius-xs);
+}
+.cyber-sidebar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* Refined top glow line */

@@ -191,7 +191,8 @@ export default function App() {
         className="cyber-sidebar"
         style={{
           width: '100%',
-          overflow: 'hidden',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           padding: sidebarCollapsed ? '16px 10px' : '24px',
           transition: 'padding 0.25s ease',
         }}
