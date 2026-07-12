@@ -165,7 +165,7 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
       </div>
 
       {/* Row 1: Tier + Source pie charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="analytics-two-col">
 
         {/* Tier breakdown */}
         <div className="cyber-card card-corner-decor">
@@ -286,7 +286,7 @@ export default function AnalyticsTab({ pipelineStats, pipelineReport }) {
       </div>
 
       {/* Row 2: Pipeline funnel bar + Daily activity line */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="analytics-two-col">
 
         {/* Funnel bar chart */}
         <div className="cyber-card card-corner-decor">

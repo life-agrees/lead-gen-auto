@@ -189,9 +189,21 @@ export default function App() {
     }
   };
 
+  const [isTrialMode, setIsTrialMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Right-panel visibility
   const showRightPanel = activeTab === 'dashboard' || activeTab === 'telemetry';
   const isFullWidthTab = activeTab === 'analytics' || activeTab === 'settings';
+
+  const displayedLeads = isTrialMode ? leads.slice(0, 10) : leads;
+  const displayedStats = isTrialMode && stats
+    ? {
+        ...stats,
+        total_leads: Math.min(stats.total_leads, 10),
+        highly_fit: Math.min(stats.highly_fit, 10),
+      }
+    : stats;
 
   if (showPreloader) {
     return <Preloader onComplete={() => setShowPreloader(false)} />;
@@ -200,10 +212,12 @@ export default function App() {
   if (showLanding) {
     return (
       <LandingPage
-        onEnterDashboard={() => setShowLanding(false)}
-        onClientLogin={() => {
-          // For now just enters dashboard
-          // Later this becomes a real auth gate
+        onEnterDashboard={(trial = false) => {
+          setIsTrialMode(trial);
+          setShowLanding(false);
+        }}
+        onClientLogin={(trial = false) => {
+          setIsTrialMode(trial);
           setShowLanding(false);
         }}
       />
@@ -213,33 +227,66 @@ export default function App() {
   return (
     <div
       data-theme={theme}
-      className="cyber-hud-container"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: sidebarCollapsed ? '64px 1fr' : '280px 1fr',
-        transition: 'grid-template-columns 0.25s ease',
-        minHeight: '100vh',
-        padding: '20px',
-        gap: '20px',
-        alignItems: 'start',
-      }}
+      className={`cyber-hud-container ${sidebarCollapsed ? 'collapsed' : ''}`}
     >
+      {/* Mobile Top Header Bar */}
+      <div className="cyber-mobile-header">
+        <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(true)} title="Open menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg viewBox="100 175 295 78" width="120" height="32" style={{ display: 'block', overflow: 'visible' }}>
+            <circle cx="163" cy="213" r="24.5" stroke="#25244c" strokeWidth="4" fill="none" />
+            <path
+              d="M123 222C123 218.06 124.035 214.159 126.045 210.519C128.055 206.88 131.001 203.573 134.716 200.787C138.43 198.001 142.84 195.791 147.693 194.284C152.546 192.776 157.747 192 163 192C168.253 192 173.454 192.776 178.307 194.284C183.16 195.791 187.57 198.001 191.284 200.787C194.999 203.573 197.945 206.88 199.955 210.519C201.965 214.159 203 218.06 203 222"
+              stroke="var(--accent-cyan)"
+              strokeWidth="5"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <circle cx="163" cy="213" r="14" fill="var(--accent-cyan)" />
+            <circle cx="158" cy="208" r="3.5" fill="#ffffff" />
+            <path d="M239.56 188.273V193.386H221.683V188.273H239.56ZM226.477 180.432H232.848V211.391C232.848 212.626 233.033 213.557 233.402 214.182C233.771 214.793 234.247 215.212 234.83 215.439C235.426 215.652 236.072 215.759 236.768 215.759C237.28 215.759 237.727 215.723 238.111 215.652C238.494 215.581 238.793 215.524 239.006 215.482L240.156 220.744C239.787 220.886 239.261 221.028 238.58 221.17C237.898 221.327 237.045 221.412 236.023 221.426C234.347 221.455 232.784 221.156 231.335 220.531C229.886 219.906 228.714 218.94 227.82 217.634C226.925 216.327 226.477 214.686 226.477 212.712V180.432ZM245.407 221V188.273H251.565V193.472H251.905C252.502 191.71 253.553 190.325 255.059 189.317C256.579 188.294 258.298 187.783 260.215 187.783C260.613 187.783 261.082 187.797 261.621 187.825C262.175 187.854 262.609 187.889 262.921 187.932V194.026C262.665 193.955 262.211 193.876 261.557 193.791C260.904 193.692 260.251 193.642 259.597 193.642C258.092 193.642 256.749 193.962 255.57 194.601C254.405 195.226 253.482 196.099 252.8 197.222C252.119 198.33 251.778 199.594 251.778 201.014V221H245.407ZM279.848 221.661C276.78 221.661 274.102 220.957 271.815 219.551C269.528 218.145 267.753 216.178 266.488 213.649C265.224 211.121 264.592 208.166 264.592 204.786C264.592 201.391 265.224 198.422 266.488 195.879C267.753 193.337 269.528 191.362 271.815 189.956C274.102 188.55 276.78 187.847 279.848 187.847C282.916 187.847 285.594 188.55 287.881 189.956C290.167 191.362 291.943 193.337 293.207 195.879C294.471 198.422 295.104 201.391 295.104 204.786C295.104 208.166 294.471 211.121 293.207 213.649C291.943 216.178 290.167 218.145 287.881 219.551C285.594 220.957 282.916 221.661 279.848 221.661ZM279.869 216.312C281.858 216.312 283.506 215.787 284.812 214.736C286.119 213.685 287.085 212.286 287.71 210.538C288.349 208.791 288.669 206.866 288.669 204.764C288.669 202.676 288.349 200.759 287.71 199.011C287.085 197.25 286.119 195.837 284.812 194.771C283.506 193.706 281.858 193.173 279.869 193.173C277.866 193.173 276.204 193.706 274.883 194.771C273.577 195.837 272.604 197.25 271.964 199.011C271.339 200.759 271.027 202.676 271.027 204.764C271.027 206.866 271.339 208.791 271.964 210.538C272.604 212.286 273.577 213.685 274.883 214.736C276.204 215.787 277.866 216.312 279.869 216.312ZM327.899 188.273L316.031 221H309.213L297.323 188.273H304.163L312.451 213.457H312.792L321.059 188.273H327.899ZM332.686 221V188.273H338.843V193.472H339.184C339.781 191.71 340.832 190.325 342.338 189.317C343.858 188.294 345.576 187.783 347.494 187.783C347.892 187.783 348.361 187.797 348.9 187.825C349.454 187.854 349.887 187.889 350.2 187.932V194.026C349.944 193.955 349.49 193.876 348.836 193.791C348.183 193.692 347.53 193.642 346.876 193.642C345.37 193.642 344.028 193.962 342.849 194.601C341.684 195.226 340.761 196.099 340.079 197.222C339.397 198.33 339.057 199.594 339.057 201.014V221H332.686Z" fill="#ffffff" />
+          </svg>
+        </div>
+        <button onClick={toggleTheme} className="mobile-theme-toggle" title={`Switch to ${theme === 'midnight' ? 'Eclipse' : 'Midnight'} theme`}>
+          <div className="theme-toggle-swatch" style={{
+            background: theme === 'midnight'
+              ? 'linear-gradient(90deg, #34d399, #22d3ee)'
+              : 'linear-gradient(90deg, #818cf8, #a78bfa)',
+          }} />
+        </button>
+      </div>
+
+      {/* Mobile Drawer Overlay Backdrop */}
+      {mobileMenuOpen && (
+        <div className="cyber-sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
 
       {/* ── Sidebar ── */}
       <div
-        className="cyber-sidebar"
+        className={`cyber-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}
         style={{
-          width: '100%',
           overflowY: 'visible',
           overflowX: 'hidden',
           padding: sidebarCollapsed ? '16px 10px' : '20px',
           transition: 'padding 0.25s ease',
         }}
       >
-        {/* ── Collapse toggle ── */}
+        {/* ── Collapse/Close toggle ── */}
         <button
-          onClick={() => setSidebarCollapsed(prev => !prev)}
-          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          onClick={() => {
+            if (window.innerWidth <= 768) {
+              setMobileMenuOpen(false);
+            } else {
+              setSidebarCollapsed(prev => !prev);
+            }
+          }}
+          title="Close or Collapse sidebar"
           style={{
             background: 'none',
             border: '1px solid var(--panel-border)',
@@ -249,14 +296,15 @@ export default function App() {
             padding: '7px',
             marginBottom: '4px',
             cursor: 'pointer',
-            fontSize: '1rem',
+            fontSize: '0.72rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: sidebarCollapsed ? 'center' : 'flex-end',
             transition: 'all 0.2s ease',
+            fontFamily: 'var(--font-mono)',
           }}
         >
-          {sidebarCollapsed ? '»' : '«'}
+          {window.innerWidth <= 768 ? '« CLOSE' : sidebarCollapsed ? '»' : '«'}
         </button>
 
         <div className="cyber-logo" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', paddingBottom: '12px', marginBottom: '2px', overflow: 'visible' }}>
@@ -468,6 +516,32 @@ export default function App() {
       {/* ── Main Viewport ── */}
       <div className="cyber-main-viewport">
 
+        {/* Trial HUD Mode Banner */}
+        {isTrialMode && (
+          <div className="cyber-card" style={{ background: 'rgba(0, 240, 255, 0.03)', borderColor: 'var(--accent-cyan)', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '14px', padding: '12px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="glow-indicator" />
+              <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.78rem', color: '#fff', letterSpacing: '1px' }}>
+                TRIAL MODE ACTIVE. SLICING HUD TELEMETRY TO TOP 10 PILOT LEADS.
+              </span>
+            </div>
+            <a
+              href="https://calendly.com/pndukwe824/trovr-discovery-call"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cyber-btn"
+              style={{
+                padding: '6px 14px', fontSize: '0.68rem',
+                background: 'var(--accent-cyan)', color: 'var(--bg-dark)',
+                borderColor: 'var(--accent-cyan)', textDecoration: 'none',
+                boxShadow: '0 0 10px rgba(0,240,255,0.3)',
+              }}
+            >
+              UPGRADE FOR FULL HUD →
+            </a>
+          </div>
+        )}
+
         {/* Loading state */}
         {loading && (
           <div className="cyber-card" style={{ display: 'flex', alignItems: 'center', gap: '12px', borderColor: 'rgba(0,240,255,0.2)' }}>
@@ -511,8 +585,8 @@ export default function App() {
         )}
 
         {/* Stats Panel — visible on dashboard + analytics */}
-        {stats && (activeTab === 'dashboard' || activeTab === 'analytics') && (
-          <StatsPanel stats={stats} pipelineStats={pipelineStats} />
+        {displayedStats && (activeTab === 'dashboard' || activeTab === 'analytics') && (
+          <StatsPanel stats={displayedStats} pipelineStats={pipelineStats} />
         )}
 
         {/* ── Tab Content ── */}
@@ -527,19 +601,11 @@ export default function App() {
         ) : activeTab === 'analytics' ? (
           <AnalyticsTab pipelineStats={pipelineStats} pipelineReport={pipelineReport} />
         ) : (
-          <div
-            className="cyber-grid"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: showRightPanel ? 'minmax(0, 1fr) minmax(280px, 380px)' : 'minmax(0, 1fr)',
-              gap: '20px',
-              flex: 1,
-            }}
-          >
+          <div className={`cyber-grid-layout ${showRightPanel ? '' : 'full-width'}`}>
             {/* Left panel */}
             {(activeTab === 'dashboard' || activeTab === 'telemetry') && (
               <LeadTable
-                leads={leads}
+                leads={displayedLeads}
                 onSelectLead={setSelectedLead}
                 onRescoreLead={handleRescoreLead}
                 onTriggerOutreach={handleTriggerOutreach}

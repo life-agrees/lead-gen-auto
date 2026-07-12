@@ -178,7 +178,9 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     if (accessCode === 'trovr2026') {
-      onClientLogin();
+      onClientLogin(false);
+    } else if (accessCode === 'free10') {
+      onClientLogin(true);
     } else {
       setLoginError(true);
       setTimeout(() => setLoginError(false), 500);
@@ -532,14 +534,13 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                   <div className="lp-pricing-feature">Instant dashboard access</div>
                 </div>
               </div>
-              <a
-                href="https://x.com/gettrovr"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => onEnterDashboard(true)}
                 className="lp-pricing-btn lp-pricing-btn-secondary"
+                style={{ cursor: 'pointer', border: '1px solid var(--accent-cyan)' }}
               >
-                DM @gettrovr on X
-              </a>
+                Activate Free Trial →
+              </button>
             </div>
 
             <div className="lp-pricing-card popular">
