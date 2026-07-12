@@ -135,7 +135,7 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
           color: '#34d399', fontSize: '0.76rem', fontFamily: 'var(--font-mono)',
           display: 'flex', alignItems: 'center', gap: '8px',
         }}>
-          ✅ Sheet synced — <span style={{ color: 'var(--text-secondary)' }}>trovr_leads_monday_delivery.csv downloaded. Paste into your client's Google Sheet.</span>
+          ✅ Sheet synced. The file trovr_leads_monday_delivery.csv was downloaded. Paste this into your client's Google Sheet.
         </div>
       )}
       {syncToast === 'error' && (
@@ -144,7 +144,7 @@ export default function OutreachLog({ logs, onSimulateStatus }) {
           background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.3)',
           color: '#fb7185', fontSize: '0.76rem', fontFamily: 'var(--font-mono)',
         }}>
-          ⚠ Export failed — check backend connection.
+          ⚠ Export failed. Verify the backend connection.
         </div>
       )}
 

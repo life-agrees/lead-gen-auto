@@ -410,7 +410,7 @@ export default function App() {
           <div className="cyber-card" style={{ display: 'flex', alignItems: 'center', gap: '12px', borderColor: 'rgba(0,240,255,0.2)' }}>
             <div className="glow-indicator" />
             <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.78rem', letterSpacing: '1px', color: 'var(--text-secondary)' }}>
-              TROVR.AI — CONNECTING TO INTELLIGENCE BACKEND...
+              TROVR.AI. CONNECTING TO BACKEND...
             </span>
           </div>
         )}
@@ -420,7 +420,7 @@ export default function App() {
           <div className="cyber-card" style={{ background: 'rgba(0, 240, 255, 0.04)', borderColor: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '14px' }}>
             <div className="glow-indicator" />
             <span style={{ fontFamily: 'var(--font-hud)', fontSize: '0.78rem', color: '#fff', letterSpacing: '1px' }}>
-              TROVR.AI PIPELINE ENGAGED — SCRAPING X &amp; GITHUB CONTRIBUTORS... FEED UPDATES LIVE.
+              TROVR.AI PIPELINE ACTIVE. SCRAPING X AND GITHUB CONTRIBUTORS. THE FEED UPDATES LIVE.
             </span>
           </div>
         )}
@@ -431,7 +431,7 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
               <div>
                 <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.78rem', color: 'var(--accent-purple)', fontWeight: 'bold', marginBottom: '8px' }}>
-                  🚀 DISPATCH SUCCESSFUL — {messagePrompt.stage.toUpperCase().replace(/_/g, ' ')}
+                  🚀 DISPATCH SUCCESSFUL: {messagePrompt.stage.toUpperCase().replace(/_/g, ' ')}
                 </div>
                 <div style={{ fontSize: '0.83rem', color: 'var(--text-primary)', fontStyle: 'italic', lineHeight: '1.5', maxWidth: '800px' }}>
                   Sent to <strong style={{ color: '#fff' }}>{messagePrompt.leadName}</strong>: "{messagePrompt.message}"

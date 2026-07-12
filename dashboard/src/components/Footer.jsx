@@ -48,7 +48,7 @@ export default function Footer() {
         <div className="footer-brand">
           <TrovrLogo width={200} filterId="footer-logo-glow" />
           <p className="footer-tagline">
-            AI-powered lead intelligence for Web3 founders. Scan on-chain signals, score builders, and ship outreach — autonomously.
+            Lead intelligence for Web3 founders. We scan on-chain signals, score profiles, and draft outreach automatically.
           </p>
           <div className="footer-socials">
             {SOCIALS.map(s => (

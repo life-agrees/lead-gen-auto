@@ -951,14 +951,8 @@ body {
 .lp-pricing-feature {
   font-size: 0.88rem;
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.lp-pricing-feature::before {
-  content: '✓';
-  color: var(--accent-cyan);
-  font-weight: bold;
+  display: block;
+  text-align: center;
 }
 .lp-pricing-btn {
   width: 100%;

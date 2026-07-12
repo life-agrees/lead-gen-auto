@@ -169,7 +169,7 @@ function EmailOutreach({ lead }) {
         showToast('success', '📧 Email dispatched via Resend');
         setEmail('');
       } else {
-        showToast('error', data.detail || '⚠ Send failed — check Resend API key');
+        showToast('error', data.detail || '⚠ Send failed. Check the Resend API key.');
       }
     } catch {
       showToast('error', '⚠ Could not reach backend');
@@ -192,7 +192,7 @@ function EmailOutreach({ lead }) {
       }}>
         The AI will craft a personalised cold email referencing{' '}
         <span style={{ color: '#fff' }}>{lead.name}</span>'s on-chain activity,
-        ENS identity, and GitHub work — then send via Resend.
+        ENS identity, and GitHub work. We will send the message using Resend.
       </div>
 
       {/* Input row */}

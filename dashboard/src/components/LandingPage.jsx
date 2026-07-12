@@ -73,7 +73,7 @@ const FEATURES = [
   {
     icon: '◈',
     title: '22-Signal ML Scoring',
-    body: 'Every lead is scored 0–100 across 22 weighted signals—including wallet age, Twitter followers, GitHub commit density, and Solidity repo matches.',
+    body: 'Every profile is scored from 0 to 100 across 22 weighted metrics. We analyze wallet age, Twitter followers, GitHub commits, and Solidity repositories.',
   },
   {
     icon: '✦',
@@ -297,7 +297,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
           </h1>
 
           <p className="lp-hero-sub" style={{ maxWidth: '580px' }}>
-            Trovr finds the specific wallets, builders, and liquidity providers who have already proven — through real on-chain transactions on Polymarket, Azuro, PancakeSwap, or Alpaca Finance — that they care about what you are building. Get a clean Google Sheet with personalized outreach every Monday.
+            Trovr finds active wallets, builders, and liquidity providers. We track real on-chain transactions on Polymarket, Azuro, PancakeSwap, and Alpaca Finance. If they interact with these protocols, they fit your target profile. You get a clean Google Sheet with personalized outreach templates every Monday.
           </p>
 
           <div className="lp-hero-ctas">
@@ -351,7 +351,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div className="lp-section-badge" style={{ display: 'inline-block', marginBottom: '10px' }}>REAL RESULTS</div>
           <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-            What One Pilot Run Produced — In 48 Hours
+            What One Pilot Run Produced in 48 Hours
           </h2>
         </div>
         <div className="lp-stats-inner">
@@ -376,7 +376,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
               Full-Stack <span className="lp-accent">Lead Intelligence</span>
             </h2>
             <p className="lp-section-sub">
-              Every layer of the funnel automated — from discovery to reply tracking.
+              Every layer of the funnel is automated from discovery to reply tracking.
             </p>
           </div>
           <div className="lp-features-grid">
@@ -434,7 +434,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
   "outreach": {
     "stage": "day_1_pitch",
     "status": "sent",
-    "ai_message": "Hey — saw your
+    "ai_message": "Hey, saw your
     Polymarket wallet hit 7 txns
     this month on Base. Building
     in prediction markets too?"
@@ -473,13 +473,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
               </svg>
             </div>
             <p className="lp-tweet-body">
-              Spent 5 weeks building an AI lead gen system specifically for Web3 founders.<br /><br />
-              → Scans Polygon, Base, Arbitrum &amp; BNB Chain wallets<br />
-              → Cross-references Twitter + GitHub for builder signals<br />
-              → ML-scores leads across 22 signals<br />
-              → Generates personalized outreach automatically<br /><br />
-              Ran a pilot: <strong>129 leads found, 8 HOT</strong>, avg score <strong>98/100</strong>. <strong>16 DMs sent</strong>.<br /><br />
-              First 10 leads free. DM me.
+              I spent five weeks building an AI lead gen system for Web3 founders. It scans wallets on major networks, cross-references profiles on Twitter and GitHub, scores them using 22 signals, and drafts custom outreach messages. The pilot found 129 leads with an average score of 98/100, and we sent 16 messages. You can try the first 10 leads free. Send me a message.
             </p>
             <div className="lp-tweet-tags">#Web3 #DeFi #BuildInPublic</div>
           </div>
@@ -490,8 +484,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
           <div className="lp-cta-block">
             <h2 className="lp-section-h2">Your first 10 leads are free.</h2>
             <p className="lp-section-sub">
-              No credit card. No setup. Just open the HUD and watch Trovr discover,
-              score, and draft outreach for real Web3 builders — in real time.
+              No credit card required. You can access the dashboard to see how Trovr finds, scores, and drafts messages for active builders.
             </p>
             <a
               href={CALENDLY_URL}
@@ -532,12 +525,12 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                   <span className="lp-pricing-price">$0</span>
                   <span className="lp-pricing-setup">No setup fee</span>
                 </div>
-                <ul className="lp-pricing-features">
-                  <li className="lp-pricing-feature">10 scored leads</li>
-                  <li className="lp-pricing-feature">Personalized AI DMs</li>
-                  <li className="lp-pricing-feature">No credit card required</li>
-                  <li className="lp-pricing-feature">Instant dashboard access</li>
-                </ul>
+                <div className="lp-pricing-features">
+                  <div className="lp-pricing-feature">10 scored leads</div>
+                  <div className="lp-pricing-feature">Personalized AI messages</div>
+                  <div className="lp-pricing-feature">No credit card required</div>
+                  <div className="lp-pricing-feature">Instant dashboard access</div>
+                </div>
               </div>
               <a
                 href="https://x.com/gettrovr"
@@ -560,13 +553,13 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                   <span className="lp-pricing-price">$400<span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/mo</span></span>
                   <span className="lp-pricing-setup">+$300 setup fee</span>
                 </div>
-                <ul className="lp-pricing-features">
-                  <li className="lp-pricing-feature"><strong>50 hot leads</strong> / month</li>
-                  <li className="lp-pricing-feature">Polymarket + Azuro scanning</li>
-                  <li className="lp-pricing-feature">PancakeSwap + Alpaca scanning</li>
-                  <li className="lp-pricing-feature">Weekly Monday Google Sheet delivery</li>
-                  <li className="lp-pricing-feature">Full AI DM personalization</li>
-                </ul>
+                <div className="lp-pricing-features">
+                  <div className="lp-pricing-feature">50 hot leads each month</div>
+                  <div className="lp-pricing-feature">Polymarket and Azuro scanning</div>
+                  <div className="lp-pricing-feature">PancakeSwap and Alpaca scanning</div>
+                  <div className="lp-pricing-feature">Weekly Monday Google Sheet delivery</div>
+                  <div className="lp-pricing-feature">Full AI message personalization</div>
+                </div>
               </div>
               <a
                 href={CALENDLY_URL}
@@ -588,13 +581,13 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                   <span className="lp-pricing-price">$600<span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/mo</span></span>
                   <span className="lp-pricing-setup">+$500 setup fee</span>
                 </div>
-                <ul className="lp-pricing-features">
-                  <li className="lp-pricing-feature"><strong>100 hot leads</strong> / month</li>
-                  <li className="lp-pricing-feature">Custom keyword & contract tracking</li>
-                  <li className="lp-pricing-feature">Weekly Monday Google Sheet delivery</li>
-                  <li className="lp-pricing-feature">AI DM Day 1 / 3 / 7 sequences</li>
-                  <li className="lp-pricing-feature">Dedicated Discord / Slack channel</li>
-                </ul>
+                <div className="lp-pricing-features">
+                  <div className="lp-pricing-feature">100 hot leads each month</div>
+                  <div className="lp-pricing-feature">Custom keyword and contract tracking</div>
+                  <div className="lp-pricing-feature">Weekly Monday Google Sheet delivery</div>
+                  <div className="lp-pricing-feature">AI message sequences for days one, three, and seven</div>
+                  <div className="lp-pricing-feature">Dedicated Discord or Slack channel</div>
+                </div>
               </div>
               <a
                 href={CALENDLY_URL}
@@ -619,20 +612,20 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
             {[
               {
-                q: 'How does Trovr discover these leads?',
-                a: 'We monitor active smart contracts (such as PancakeSwap, Alpaca Finance, Polymarket, or Azuro) across Base, Polygon, Arbitrum, and BNB Chain. If a wallet interacts with these contracts with real capital in the last 30 days, we extract the signal and match it to a social profile.',
+                q: 'How does Trovr find leads?',
+                a: 'We track active contracts on Polygon, Base, Arbitrum, and BNB Chain. When a wallet interacts with protocols like Polymarket or PancakeSwap, we match that wallet to a social profile.',
               },
               {
-                q: 'How are the leads and outreach messages delivered?',
-                a: 'Every Monday morning, you receive a clean Google Sheet with all hot/warm leads, their specific on-chain transactions, linked ENS/GitHub profiles, and pre-written Day 1 / 3 / 7 outreach DMs ready to copy-paste.',
+                q: 'How do you deliver the leads?',
+                a: 'Every Monday morning you get a clean Google Sheet. It contains the qualified leads, their transaction histories, linked profiles, and draft messages.',
               },
               {
-                q: 'How is this different from generic lead lists?',
-                a: 'Everyone else scrapes static Twitter lists or keywords. Trovr cross-references actual wallet activity. A lead who has completed 7 prediction market trades in the last month is a proven high-intent user, not a random cold contact.',
+                q: 'Why is this better than regular lists?',
+                a: 'Standard lists rely on scraped social profiles or keywords. We focus on real wallet activity. A user who recently executed transactions has proven interest, making them a high-intent lead.',
               },
               {
-                q: 'Do you offer a free sample?',
-                a: 'Yes. You can claim a free sample of 10 qualified leads with pre-written DMs. No credit card is required, and you can upgrade to Starter or Growth plans as you scale.',
+                q: 'Can I try it first?',
+                a: 'Yes. You can request a free sample of 10 leads with custom messages. No card is required.',
               },
             ].map(({ q, a }) => (
               <FAQItem key={q} q={q} a={a} />
