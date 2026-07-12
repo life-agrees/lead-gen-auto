@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   keywords: [],
   digest_enabled: false,
   digest_email: '',
+  trial_passcode: 'free10',
 };
 
 const SectionTitle = ({ children }) => (
@@ -275,7 +276,41 @@ export default function SettingsPanel() {
         </div>
       </div>
 
-      {/* ── Section 4: Daily Digest ── */}
+      {/* ── Section 3b: Trial Distribution ── */}
+      <div style={cardStyle}>
+        <SectionTitle>TRIAL DISTRIBUTION</SectionTitle>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginBottom: '12px', lineHeight: 1.7 }}>
+          You control who gets the free 10-lead trial. Share this code with qualifying projects —
+          only holders of this exact code can access the trial dashboard view.
+          Change it anytime to invalidate old codes.
+        </p>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder="Trial passcode..."
+            value={settings.trial_passcode || ''}
+            onChange={e => setSettings(s => ({ ...s, trial_passcode: e.target.value }))}
+            style={{ ...inputStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
+          />
+          <button
+            onClick={() => {
+              const code = Math.random().toString(36).slice(2, 10);
+              setSettings(s => ({ ...s, trial_passcode: code }));
+            }}
+            style={{
+              background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.2)',
+              borderRadius: '7px', color: 'var(--accent-cyan)',
+              fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
+              padding: '9px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            ↺ GENERATE
+          </button>
+        </div>
+        <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
+          Admin master code (set via ADMIN_MASTER_CODE env var) always grants full access regardless of this field.
+        </p>
+      </div>
       <div style={cardStyle}>
         <SectionTitle>DAILY DIGEST</SectionTitle>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginBottom: '16px', lineHeight: 1.6 }}>

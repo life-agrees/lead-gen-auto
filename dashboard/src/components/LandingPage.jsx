@@ -175,15 +175,36 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
   const [accessCode, setAccessCode] = useState('');
   const [loginError, setLoginError] = useState(false);
 
-  const handleLoginSubmit = (e) => {
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (accessCode === 'trovr2026') {
-      onClientLogin(false);
-    } else if (accessCode === 'free10') {
-      onClientLogin(true);
-    } else {
+    setLoginLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/settings/verify-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: accessCode }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShowLoginModal(false);
+        setAccessCode('');
+        if (data.role === 'admin') {
+          onClientLogin(false);   // full access
+        } else {
+          onClientLogin(true);    // trial access (10 leads)
+        }
+      } else {
+        setLoginError(true);
+        setTimeout(() => setLoginError(false), 600);
+      }
+    } catch {
+      // Network failure — fall back to showing error
       setLoginError(true);
-      setTimeout(() => setLoginError(false), 500);
+      setTimeout(() => setLoginError(false), 600);
+    } finally {
+      setLoginLoading(false);
     }
   };
 
@@ -535,11 +556,11 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                 </div>
               </div>
               <button
-                onClick={() => onEnterDashboard(true)}
+                onClick={() => setShowLoginModal(true)}
                 className="lp-pricing-btn lp-pricing-btn-secondary"
                 style={{ cursor: 'pointer', border: '1px solid var(--accent-cyan)' }}
               >
-                Activate Free Trial →
+                Request Free Trial →
               </button>
             </div>
 
@@ -746,6 +767,7 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
               </button>
               <button
                 type="submit"
+                disabled={loginLoading}
                 style={{
                   flex: 1,
                   background: 'var(--accent-primary)',
@@ -756,19 +778,22 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
                   fontSize: '0.8rem',
                   fontFamily: 'var(--font-mono)',
                   fontWeight: 600,
-                  cursor: 'pointer',
+                  cursor: loginLoading ? 'not-allowed' : 'pointer',
+                  opacity: loginLoading ? 0.7 : 1,
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = '0 0 15px var(--accent-primary)';
-                  e.currentTarget.style.filter = 'brightness(1.1)';
+                  if (!loginLoading) {
+                    e.currentTarget.style.boxShadow = '0 0 15px var(--accent-primary)';
+                    e.currentTarget.style.filter = 'brightness(1.1)';
+                  }
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.boxShadow = 'none';
                   e.currentTarget.style.filter = 'none';
                 }}
               >
-                Access HUD →
+                {loginLoading ? 'VERIFYING...' : 'Access HUD →'}
               </button>
             </div>
           </form>

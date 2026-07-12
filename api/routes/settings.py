@@ -11,6 +11,9 @@ import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+
+# The master admin code is read from the environment so it is never in source code.
+ADMIN_MASTER_CODE = os.getenv("ADMIN_MASTER_CODE", "trovr2026")
 from api.db.supabase_client import DatabaseClient
 from utils.logger import get_logger
 
@@ -32,6 +35,7 @@ DEFAULT_SETTINGS = {
     "keywords": ["defi", "solidity", "web3", "crypto", "zk", "nft", "dao", "ethereum"],
     "digest_enabled": False,
     "digest_email": "",
+    "trial_passcode": "free10",
 }
 
 
@@ -42,6 +46,11 @@ class CampaignSettings(BaseModel):
     keywords: List[str]
     digest_enabled: bool
     digest_email: Optional[str] = ""
+    trial_passcode: Optional[str] = "free10"
+
+
+class VerifyCodeRequest(BaseModel):
+    code: str
 
 
 def _read_fallback() -> dict:
@@ -133,3 +142,35 @@ def update_campaign_settings(settings: CampaignSettings) -> dict:
         return {"status": "saved", **data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+
+
+@router.post("/verify-code")
+def verify_access_code(body: VerifyCodeRequest) -> dict:
+    """
+    Verifies a client or admin access code.
+    Returns { "verified": true, "role": "admin" | "trial" } on success.
+    The admin master code is read from the ADMIN_MASTER_CODE env var.
+    The trial passcode is the one stored dynamically in campaign settings.
+    """
+    submitted = (body.code or "").strip()
+    if not submitted:
+        raise HTTPException(status_code=401, detail="No code provided")
+
+    # Check master admin code first
+    if submitted == ADMIN_MASTER_CODE:
+        return {"verified": True, "role": "admin"}
+
+    # Load stored trial passcode from settings
+    try:
+        if db.use_supabase:
+            current_settings = _read_from_supabase()
+        else:
+            current_settings = _read_fallback()
+        trial_code = current_settings.get("trial_passcode", DEFAULT_SETTINGS["trial_passcode"])
+    except Exception:
+        trial_code = DEFAULT_SETTINGS["trial_passcode"]
+
+    if submitted == trial_code:
+        return {"verified": True, "role": "trial"}
+
+    raise HTTPException(status_code=401, detail="Invalid access code")
