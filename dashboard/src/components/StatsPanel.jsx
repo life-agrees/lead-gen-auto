@@ -37,48 +37,55 @@ export default function StatsPanel({ stats, pipelineStats }) {
   const tiers = pipelineStats?.tiers || {};
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* 4 Stat Cards Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '16px',
+        width: '100%'
+      }}>
+        <StatCard
+          label="TOTAL LEADS DISCOVERED"
+          value={stats.total_leads}
+          color="#fff"
+          accent="rgba(0,240,255,0.06)"
+          sub={
+            <>
+              <div className="glow-indicator" />
+              Scrapers active on X, GitHub &amp; Wallets
+            </>
+          }
+        />
 
-      <StatCard
-        label="TOTAL LEADS DISCOVERED"
-        value={stats.total_leads}
-        color="#fff"
-        accent="rgba(0,240,255,0.06)"
-        sub={
-          <>
-            <div className="glow-indicator" />
-            Scrapers active on X, GitHub &amp; Wallets
-          </>
-        }
-      />
+        <StatCard
+          label="HIGH-FIT LEADS (≥70)"
+          value={stats.highly_fit}
+          color="var(--accent-cyan)"
+          accent="rgba(0,240,255,0.08)"
+          sub="Targeted ICP profiles fitting Web3 criteria"
+        />
 
-      <StatCard
-        label="HIGH-FIT LEADS (≥70)"
-        value={stats.highly_fit}
-        color="var(--accent-cyan)"
-        accent="rgba(0,240,255,0.08)"
-        sub="Targeted ICP profiles fitting Web3 criteria"
-      />
+        <StatCard
+          label="AVERAGE FIT SCORE"
+          value={`${stats.average_score}%`}
+          color="var(--accent-purple)"
+          accent="rgba(157,78,221,0.08)"
+          sub="Combined heuristic and ML evaluations"
+        />
 
-      <StatCard
-        label="AVERAGE FIT SCORE"
-        value={`${stats.average_score}%`}
-        color="var(--accent-purple)"
-        accent="rgba(157,78,221,0.08)"
-        sub="Combined heuristic and ML evaluations"
-      />
+        <StatCard
+          label="OUTREACH CONVERSION"
+          value={`${stats.conversion_rate}%`}
+          color="#34d399"
+          accent="rgba(52,211,153,0.08)"
+          sub="Positive reply ratio from campaigns"
+        />
+      </div>
 
-      <StatCard
-        label="OUTREACH CONVERSION"
-        value={`${stats.conversion_rate}%`}
-        color="#34d399"
-        accent="rgba(52,211,153,0.08)"
-        sub="Positive reply ratio from campaigns"
-      />
-
-      {/* Tier mini-bar — only when pipelineStats available */}
+      {/* Tier mini-bar — placed below the grid to avoid column-stretching bugs */}
       {pipelineStats && stats.total_leads > 0 && (
-        <div className="cyber-card" style={{ gridColumn: '1 / -1', padding: '16px 24px' }}>
+        <div className="cyber-card" style={{ padding: '16px 24px' }}>
           <div style={{ fontSize: '0.7rem', fontFamily: 'var(--font-hud)', color: 'var(--text-secondary)', letterSpacing: '1px', marginBottom: '10px' }}>
             LEAD TIER HEAT MAP
           </div>
