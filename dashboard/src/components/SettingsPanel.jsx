@@ -59,6 +59,7 @@ export default function SettingsPanel() {
   const [digestPreview, setDigestPreview] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [sendingDigest, setSendingDigest] = useState(false);
+  const [selectedNiche, setSelectedNiche] = useState('defi');
 
   const showToast = (type, msg) => {
     setToast({ type, msg });
@@ -98,6 +99,48 @@ export default function SettingsPanel() {
       showToast('error', 'Could not reach backend');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleGenerateNicheCode = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/settings/generate-niche-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche: selectedNiche }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(s => ({
+          ...s,
+          niche_codes: data.niche_codes,
+        }));
+        showToast('success', `Generated ${selectedNiche.toUpperCase()} passcode`);
+      } else {
+        showToast('error', 'Failed to generate code');
+      }
+    } catch {
+      showToast('error', 'Could not connect to generate code');
+    }
+  };
+
+  const handleDeleteNicheCode = async (code) => {
+    try {
+      const res = await fetch(`${API_BASE}/settings/niche-code/${code}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(s => ({
+          ...s,
+          niche_codes: data.niche_codes,
+        }));
+        showToast('success', 'Passcode removed');
+      } else {
+        showToast('error', 'Failed to remove passcode');
+      }
+    } catch {
+      showToast('error', 'Could not connect to remove passcode');
     }
   };
 
@@ -314,34 +357,100 @@ export default function SettingsPanel() {
           </div>
         </div>
 
-        {/* Paid Passcode */}
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.7rem', color: '#b388ff', marginBottom: '8px', letterSpacing: '0.5px' }}>
-            PAID CLIENT PASSCODE (GRANTS FULL CLIENT VIEW WITH NO LEADS LIMIT & NO UPGRADE BANNER)
+        {/* Niche Passcodes Section */}
+        <div style={{ marginTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px' }}>
+          <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.7rem', color: '#b388ff', marginBottom: '12px', letterSpacing: '0.5px' }}>
+            PAID CLIENT DISTRIBUTION CODES
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              type="text"
-              placeholder="Paid passcode..."
-              value={settings.paid_passcode || ''}
-              onChange={e => setSettings(s => ({ ...s, paid_passcode: e.target.value }))}
-              style={{ ...inputStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
-            />
-            <button
-              onClick={() => {
-                const code = Math.random().toString(36).slice(2, 10);
-                setSettings(s => ({ ...s, paid_passcode: code }));
-              }}
+
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', alignItems: 'center' }}>
+            <select
+              value={selectedNiche}
+              onChange={e => setSelectedNiche(e.target.value)}
               style={{
-                background: 'rgba(179,136,255,0.06)', border: '1px solid rgba(179,136,255,0.2)',
-                borderRadius: '7px', color: '#b388ff',
-                fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
-                padding: '9px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
+                background: 'rgba(5, 7, 15, 0.7)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '7px',
+                padding: '9px 12px',
+                color: '#fff',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.8rem',
+                outline: 'none',
+                width: 'auto',
+                flex: 1,
+                textTransform: 'uppercase',
+                height: '38px',
               }}
             >
-              ↺ GENERATE
+              <option value="defi">DeFi Protocol</option>
+              <option value="kol">KOL / Influencer</option>
+              <option value="lp">Liquidity Provider</option>
+              <option value="pred">Prediction Market</option>
+              <option value="nft">NFT / Creator</option>
+              <option value="gen">General / Unlimited</option>
+            </select>
+            <button
+              onClick={handleGenerateNicheCode}
+              style={{
+                background: 'rgba(179,136,255,0.12)', border: '1px solid rgba(179,136,255,0.3)',
+                borderRadius: '7px', color: '#b388ff',
+                fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
+                padding: '10px 18px', cursor: 'pointer', whiteSpace: 'nowrap',
+                height: '38px',
+              }}
+            >
+              + ADD CLIENT CODE
             </button>
           </div>
+
+          {/* List of active client codes */}
+          {(!settings.niche_codes || Object.keys(settings.niche_codes).length === 0) ? (
+            <div style={{
+              fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)',
+              textAlign: 'center', padding: '16px', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '8px'
+            }}>
+              No paid client codes generated yet. Use the dropdown above to create one.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {Object.entries(settings.niche_codes).map(([code, niche]) => (
+                <div
+                  key={code}
+                  style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.04)'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: '0.65rem', fontFamily: 'var(--font-hud)', letterSpacing: '0.5px',
+                      background: niche === 'defi' ? 'rgba(52, 211, 153, 0.12)' : niche === 'kol' ? 'rgba(0, 240, 255, 0.12)' : 'rgba(179, 136, 255, 0.12)',
+                      border: niche === 'defi' ? '1px solid rgba(52, 211, 153, 0.3)' : niche === 'kol' ? '1px solid rgba(0, 240, 255, 0.3)' : '1px solid rgba(179, 136, 255, 0.3)',
+                      borderRadius: '4px',
+                      color: niche === 'defi' ? '#34d399' : niche === 'kol' ? 'var(--accent-cyan)' : '#b388ff',
+                      padding: '2px 8px', textTransform: 'uppercase'
+                    }}>
+                      {niche}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 'bold', color: '#fff', letterSpacing: '1px' }}>
+                      {code}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteNicheCode(code)}
+                    style={{
+                      background: 'none', border: 'none', color: '#ef4444',
+                      fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'var(--font-hud)',
+                      letterSpacing: '0.5px', padding: '4px 8px'
+                    }}
+                  >
+                    REMOVE
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>

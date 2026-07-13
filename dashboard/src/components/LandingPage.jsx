@@ -191,11 +191,11 @@ export default function LandingPage({ onEnterDashboard, onClientLogin }) {
         setShowLoginModal(false);
         setAccessCode('');
         if (data.role === 'admin') {
-          onClientLogin(false, 'admin');   // full admin access
+          onClientLogin(false, 'admin', null);   // full admin access
         } else if (data.role === 'paid') {
-          onClientLogin(false, 'client');  // full paid client access (no trial limits)
+          onClientLogin(false, 'client', data.niche || 'gen');  // full paid client access with their niche
         } else {
-          onClientLogin(true, 'client');   // free trial client access
+          onClientLogin(true, 'client', 'gen');   // free trial client access
         }
       } else {
         setLoginError(true);

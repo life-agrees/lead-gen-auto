@@ -58,6 +58,64 @@ function generateCSV(leads, messageMap) {
   return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
+function matchesNiche(lead, niche) {
+  if (!niche || niche === 'gen') return true;
+
+  const src = [lead.source, lead.bio, lead.twitter_bio, lead.keywords]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  const nicheLower = niche.toLowerCase();
+
+  if (nicheLower === 'defi') {
+    return (
+      src.includes('defi') ||
+      src.includes('aave') ||
+      src.includes('uniswap') ||
+      src.includes('pancake') ||
+      src.includes('compound') ||
+      src.includes('protocol') ||
+      src.includes('vault') ||
+      src.includes('yield') ||
+      src.includes('lending')
+    );
+  }
+  if (nicheLower === 'kol') {
+    return (lead.followers_count || 0) >= 5000 || lead.source === 'twitter';
+  }
+  if (nicheLower === 'lp') {
+    return (
+      src.includes('lp') ||
+      src.includes('liquidity') ||
+      src.includes('yield') ||
+      src.includes('pool') ||
+      src.includes('market maker')
+    );
+  }
+  if (nicheLower === 'pred') {
+    return (
+      src.includes('polymarket') ||
+      src.includes('azuro') ||
+      src.includes('prediction') ||
+      src.includes('betting') ||
+      src.includes('forecast')
+    );
+  }
+  if (nicheLower === 'nft') {
+    return (
+      src.includes('nft') ||
+      src.includes('opensea') ||
+      src.includes('creator') ||
+      src.includes('mint') ||
+      src.includes('collection') ||
+      src.includes('art')
+    );
+  }
+
+  return true;
+}
+
 // ── Score Bar ─────────────────────────────────────────────────────────────────
 
 function ScoreBar({ score }) {
@@ -97,7 +155,6 @@ function LeadCard({ lead, message }) {
     try {
       await navigator.clipboard.writeText(message);
     } catch {
-      // fallback for older browsers
       const ta = document.createElement('textarea');
       ta.value = message;
       document.body.appendChild(ta);
@@ -177,8 +234,9 @@ function LeadCard({ lead, message }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, theme }) {
+export default function ClientDashboard({ leads, logs, isTrialMode, niche, onLogout, theme }) {
   const weekOf = useMemo(() => getWeekOf(), []);
+  const activeNiche = niche || 'gen';
 
   const messageMap = useMemo(() => {
     const map = {};
@@ -190,18 +248,32 @@ export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, th
     return map;
   }, [logs]);
 
-  const hotLeads  = leads.filter(l => (l.score || 0) >= 70);
-  const warmLeads = leads.filter(l => (l.score || 0) >= 40 && (l.score || 0) < 70);
+  // Filter leads based on client niche selection
+  const filteredLeads = useMemo(() => {
+    return (leads || []).filter(l => matchesNiche(l, activeNiche));
+  }, [leads, activeNiche]);
+
+  const hotLeads  = useMemo(() => filteredLeads.filter(l => (l.score || 0) >= 70), [filteredLeads]);
+  const warmLeads = useMemo(() => filteredLeads.filter(l => (l.score || 0) >= 40 && (l.score || 0) < 70), [filteredLeads]);
 
   const handleDownloadCSV = () => {
-    const csv  = generateCSV(leads, messageMap);
+    const csv  = generateCSV(filteredLeads, messageMap);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `trovr-leads-${weekOf.replace(/ /g, '-')}.csv`;
+    a.download = `trovr-${activeNiche}-leads-${weekOf.replace(/ /g, '-')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const nicheLabels = {
+    defi: 'DeFi Protocol',
+    kol: 'KOL Outreach',
+    lp: 'Liquidity Provider',
+    pred: 'Prediction Market',
+    nft: 'NFT / Creator',
+    gen: 'All Categories'
   };
 
   return (
@@ -227,9 +299,9 @@ export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, th
             <div>
               <div className="cv-header-title">
                 <span className="cv-live-dot" />
-                YOUR LEADS
+                YOUR {activeNiche !== 'gen' ? activeNiche.toUpperCase() + ' ' : ''}LEADS
               </div>
-              <div className="cv-header-week">Week of {weekOf}</div>
+              <div className="cv-header-week">Week of {weekOf} · {nicheLabels[activeNiche] || activeNiche}</div>
             </div>
           </div>
 
@@ -261,7 +333,7 @@ export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, th
             <span>🌡</span> {warmLeads.length} WARM
           </div>
           <div className="cv-stat-pill cv-stat-total">
-            {leads.length} Leads Total
+            {filteredLeads.length} Leads Total
           </div>
         </div>
 
@@ -280,10 +352,10 @@ export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, th
 
         {/* Lead cards */}
         <div className="cv-leads-list">
-          {leads.length === 0 ? (
+          {filteredLeads.length === 0 ? (
             <div className="cv-empty-state">
               <div className="cv-empty-icon">⬡</div>
-              <div className="cv-empty-title">Your leads are being prepared</div>
+              <div className="cv-empty-title">Your {nicheLabels[activeNiche] || activeNiche} leads are being prepared</div>
               <div className="cv-empty-sub">
                 We'll notify you when your first batch is ready.<br />
                 Usually within 24–48 hours of onboarding.
@@ -299,7 +371,7 @@ export default function ClientDashboard({ leads, logs, isTrialMode, onLogout, th
               </a>
             </div>
           ) : (
-            leads.map((lead, i) => {
+            filteredLeads.map((lead, i) => {
               const message =
                 messageMap[lead.id]   ||
                 messageMap[lead.name] ||

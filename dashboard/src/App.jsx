@@ -75,6 +75,7 @@ export default function App() {
   const toggleTheme = () => setTheme(t => t === 'midnight' ? 'eclipse' : 'midnight');
   const [showLanding, setShowLanding] = useState(true);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [clientNiche, setClientNiche] = useState('gen');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [leads, setLeads] = useState([]);
   const [logs, setLogs] = useState([]);
@@ -214,14 +215,16 @@ export default function App() {
   if (showLanding) {
     return (
       <LandingPage
-        onEnterDashboard={(trial = false, role = 'client') => {
+        onEnterDashboard={(trial = false, role = 'client', niche = 'gen') => {
           setIsTrialMode(trial);
           setIsAdminView(role === 'admin');
+          setClientNiche(niche || 'gen');
           setShowLanding(false);
         }}
-        onClientLogin={(trial = false, role = 'client') => {
+        onClientLogin={(trial = false, role = 'client', niche = 'gen') => {
           setIsTrialMode(trial);
           setIsAdminView(role === 'admin');
+          setClientNiche(niche || 'gen');
           setShowLanding(false);
         }}
       />
@@ -234,6 +237,7 @@ export default function App() {
         leads={displayedLeads}
         logs={logs}
         isTrialMode={isTrialMode}
+        niche={clientNiche}
         onLogout={() => setShowLanding(true)}
         theme={theme}
       />

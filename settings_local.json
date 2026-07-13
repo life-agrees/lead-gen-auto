@@ -1,0 +1,13 @@
+{
+  "persona_instructions": "Test instructions",
+  "hot_threshold": 70,
+  "warm_threshold": 40,
+  "keywords": [
+    "defi",
+    "solidity"
+  ],
+  "digest_enabled": false,
+  "digest_email": "test@example.com",
+  "trial_passcode": "free10",
+  "paid_passcode": "paidleads"
+}
