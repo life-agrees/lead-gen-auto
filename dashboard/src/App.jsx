@@ -214,14 +214,14 @@ export default function App() {
   if (showLanding) {
     return (
       <LandingPage
-        onEnterDashboard={(trial = false) => {
+        onEnterDashboard={(trial = false, role = 'client') => {
           setIsTrialMode(trial);
-          setIsAdminView(!trial);
+          setIsAdminView(role === 'admin');
           setShowLanding(false);
         }}
-        onClientLogin={(trial = false) => {
+        onClientLogin={(trial = false, role = 'client') => {
           setIsTrialMode(trial);
-          setIsAdminView(!trial);
+          setIsAdminView(role === 'admin');
           setShowLanding(false);
         }}
       />

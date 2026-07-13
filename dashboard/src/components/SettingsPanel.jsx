@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = {
   digest_enabled: false,
   digest_email: '',
   trial_passcode: 'free10',
+  paid_passcode: 'paidleads',
 };
 
 const SectionTitle = ({ children }) => (
@@ -276,39 +277,75 @@ export default function SettingsPanel() {
         </div>
       </div>
 
-      {/* ── Section 3b: Trial Distribution ── */}
+      {/* ── Section 3b: Client Distribution ── */}
       <div style={cardStyle}>
-        <SectionTitle>TRIAL DISTRIBUTION</SectionTitle>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginBottom: '12px', lineHeight: 1.7 }}>
-          You control who gets the free 10-lead trial. Share this code with qualifying projects —
-          only holders of this exact code can access the trial dashboard view.
-          Change it anytime to invalidate old codes.
+        <SectionTitle>CLIENT DISTRIBUTION & ACCESS CODES</SectionTitle>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', marginBottom: '16px', lineHeight: 1.7 }}>
+          Configure passcodes to distribute access to your dashboard. Clients will enter these codes on the landing page to load their view.
         </p>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
-            type="text"
-            placeholder="Trial passcode..."
-            value={settings.trial_passcode || ''}
-            onChange={e => setSettings(s => ({ ...s, trial_passcode: e.target.value }))}
-            style={{ ...inputStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
-          />
-          <button
-            onClick={() => {
-              const code = Math.random().toString(36).slice(2, 10);
-              setSettings(s => ({ ...s, trial_passcode: code }));
-            }}
-            style={{
-              background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.2)',
-              borderRadius: '7px', color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
-              padding: '9px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            ↺ GENERATE
-          </button>
+
+        {/* Trial Passcode */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.7rem', color: 'var(--accent-cyan)', marginBottom: '8px', letterSpacing: '0.5px' }}>
+            FREE TRIAL PASSCODE (LIMITS ACCESS TO 10 LEADS + SHOWS UPGRADE CTA)
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Trial passcode..."
+              value={settings.trial_passcode || ''}
+              onChange={e => setSettings(s => ({ ...s, trial_passcode: e.target.value }))}
+              style={{ ...inputStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
+            />
+            <button
+              onClick={() => {
+                const code = Math.random().toString(36).slice(2, 10);
+                setSettings(s => ({ ...s, trial_passcode: code }));
+              }}
+              style={{
+                background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.2)',
+                borderRadius: '7px', color: 'var(--accent-cyan)',
+                fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
+                padding: '9px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              ↺ GENERATE
+            </button>
+          </div>
         </div>
+
+        {/* Paid Passcode */}
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.7rem', color: '#b388ff', marginBottom: '8px', letterSpacing: '0.5px' }}>
+            PAID CLIENT PASSCODE (GRANTS FULL CLIENT VIEW WITH NO LEADS LIMIT & NO UPGRADE BANNER)
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Paid passcode..."
+              value={settings.paid_passcode || ''}
+              onChange={e => setSettings(s => ({ ...s, paid_passcode: e.target.value }))}
+              style={{ ...inputStyle, flex: 1, fontWeight: 700, letterSpacing: '2px' }}
+            />
+            <button
+              onClick={() => {
+                const code = Math.random().toString(36).slice(2, 10);
+                setSettings(s => ({ ...s, paid_passcode: code }));
+              }}
+              style={{
+                background: 'rgba(179,136,255,0.06)', border: '1px solid rgba(179,136,255,0.2)',
+                borderRadius: '7px', color: '#b388ff',
+                fontFamily: 'var(--font-hud)', fontSize: '0.67rem', letterSpacing: '0.8px',
+                padding: '9px 14px', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              ↺ GENERATE
+            </button>
+          </div>
+        </div>
+
         <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)', marginTop: '8px' }}>
-          Admin master code (set via ADMIN_MASTER_CODE env var) always grants full access regardless of this field.
+          Admin master code (set via ADMIN_MASTER_CODE env var) always grants access to your founder HUD panel.
         </p>
       </div>
       <div style={cardStyle}>

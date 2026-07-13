@@ -36,6 +36,7 @@ DEFAULT_SETTINGS = {
     "digest_enabled": False,
     "digest_email": "",
     "trial_passcode": "free10",
+    "paid_passcode": "paidleads",
 }
 
 
@@ -47,6 +48,7 @@ class CampaignSettings(BaseModel):
     digest_enabled: bool
     digest_email: Optional[str] = ""
     trial_passcode: Optional[str] = "free10"
+    paid_passcode: Optional[str] = "paidleads"
 
 
 class VerifyCodeRequest(BaseModel):
@@ -101,6 +103,36 @@ def _write_trial_passcode(code: str) -> None:
         json.dump(existing, f, indent=2)
 
 
+def _read_paid_passcode() -> str:
+    """
+    Always reads paid_passcode from the local JSON file.
+    """
+    if os.path.exists(SETTINGS_FALLBACK_PATH):
+        try:
+            with open(SETTINGS_FALLBACK_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("paid_passcode", DEFAULT_SETTINGS["paid_passcode"])
+        except Exception:
+            pass
+    return DEFAULT_SETTINGS["paid_passcode"]
+
+
+def _write_paid_passcode(code: str) -> None:
+    """
+    Always writes paid_passcode to the local JSON file, merging with existing values.
+    """
+    existing: dict = {}
+    if os.path.exists(SETTINGS_FALLBACK_PATH):
+        try:
+            with open(SETTINGS_FALLBACK_PATH, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            pass
+    existing["paid_passcode"] = code
+    with open(SETTINGS_FALLBACK_PATH, "w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2)
+
+
 def _read_from_supabase() -> dict:
     try:
         res = (
@@ -120,12 +152,13 @@ def _read_from_supabase() -> dict:
                 "keywords": row.get("keywords", DEFAULT_SETTINGS["keywords"]) or DEFAULT_SETTINGS["keywords"],
                 "digest_enabled": row.get("digest_enabled", False),
                 "digest_email": row.get("digest_email", ""),
-                # trial_passcode is always sourced from the local file, not Supabase
+                # trial_passcode & paid_passcode are always sourced from the local file, not Supabase
                 "trial_passcode": _read_trial_passcode(),
+                "paid_passcode": _read_paid_passcode(),
             }
     except Exception as e:
         logger.warning(f"Could not read settings from Supabase: {e}")
-    return {**dict(DEFAULT_SETTINGS), "trial_passcode": _read_trial_passcode()}
+    return {**dict(DEFAULT_SETTINGS), "trial_passcode": _read_trial_passcode(), "paid_passcode": _read_paid_passcode()}
 
 
 def _write_to_supabase(data: dict) -> None:
@@ -155,9 +188,11 @@ def _write_to_supabase(data: dict) -> None:
         logger.error(f"Could not write settings to Supabase: {e}")
         raise
     finally:
-        # Always persist trial_passcode locally regardless of Supabase success/failure
+        # Always persist trial_passcode and paid_passcode locally regardless of Supabase success/failure
         if "trial_passcode" in data:
             _write_trial_passcode(data["trial_passcode"])
+        if "paid_passcode" in data:
+            _write_paid_passcode(data["paid_passcode"])
 
 
 @router.get("/campaign")
@@ -202,9 +237,12 @@ def verify_access_code(body: VerifyCodeRequest) -> dict:
 
     # Always read from local file — never from Supabase — so saves always take effect
     trial_code = _read_trial_passcode()
-    logger.info(f"verify-code: submitted='{submitted}', active_trial_code='{trial_code}'")
+    paid_code = _read_paid_passcode()
+    logger.info(f"verify-code: submitted='{submitted}', active_trial_code='{trial_code}', active_paid_code='{paid_code}'")
 
     if submitted == trial_code:
         return {"verified": True, "role": "trial"}
+    if submitted == paid_code:
+        return {"verified": True, "role": "paid"}
 
     raise HTTPException(status_code=401, detail="Invalid access code")
